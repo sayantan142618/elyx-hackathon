@@ -119,10 +119,10 @@ st.markdown(
         padding: 0 2px;
         border-radius: 2px;
     }
-
-    /* Expander spacing */
-    .stExpander {
-        margin-bottom: 10px;
+    
+    /* Ensure no text wrapping inside expander header */
+    .stExpander > button p {
+        white-space: nowrap !important;
     }
     </style>
     """,
@@ -144,7 +144,6 @@ try:
         "PT Hours": round(metrics['pt_hours'].sum(), 1),
         "Concierge Hours": round(metrics['ruby_hours'].sum(), 1)
     }
-
 except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
@@ -194,12 +193,13 @@ type_colors = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        emoji = type_emojis.get(dec['type'], "📌")
         
-        # Short expander title
-        with st.expander(f"{emoji} {dec['date'][:10]} — {dec['title']}"):
+        # New: Use a minimal title for the expander
+        with st.expander(f"**{dec['title']}**", expanded=False):
             
-            # Type tag
+            # Move date and type information inside the expander
+            st.markdown(f"**Date:** {dec['date'][:10]}", unsafe_allow_html=True)
+            
             tag_color = type_colors.get(dec['type'], "#1a4f78")
             st.markdown(
                 f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
