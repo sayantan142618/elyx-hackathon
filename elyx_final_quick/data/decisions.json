@@ -1,0 +1,402 @@
+[
+  {
+    "date": "2025-01-21T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      7,
+      8
+    ]
+  },
+  {
+    "date": "2025-01-22T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      9
+    ]
+  },
+  {
+    "date": "2025-01-25T00:00:00",
+    "type": "diagnostic_order",
+    "title": "Quarterly panel",
+    "rationale": "3-month check",
+    "source_message_ids": [
+      11
+    ]
+  },
+  {
+    "date": "2025-02-05T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      17
+    ]
+  },
+  {
+    "date": "2025-02-19T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      25
+    ]
+  },
+  {
+    "date": "2025-02-26T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      30,
+      31
+    ]
+  },
+  {
+    "date": "2025-03-05T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      38
+    ]
+  },
+  {
+    "date": "2025-03-09T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      41,
+      42
+    ]
+  },
+  {
+    "date": "2025-03-10T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      44,
+      45
+    ]
+  },
+  {
+    "date": "2025-03-13T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      49,
+      50
+    ]
+  },
+  {
+    "date": "2025-03-16T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      53,
+      54
+    ]
+  },
+  {
+    "date": "2025-03-19T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      56
+    ]
+  },
+  {
+    "date": "2025-03-22T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      58,
+      59
+    ]
+  },
+  {
+    "date": "2025-03-25T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      61,
+      62
+    ]
+  },
+  {
+    "date": "2025-04-02T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      68
+    ]
+  },
+  {
+    "date": "2025-04-04T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      70,
+      71
+    ]
+  },
+  {
+    "date": "2025-04-16T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      75
+    ]
+  },
+  {
+    "date": "2025-04-18T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      78,
+      79
+    ]
+  },
+  {
+    "date": "2025-04-25T00:00:00",
+    "type": "diagnostic_order",
+    "title": "Quarterly panel",
+    "rationale": "3-month check",
+    "source_message_ids": [
+      84
+    ]
+  },
+  {
+    "date": "2025-04-30T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      87
+    ]
+  },
+  {
+    "date": "2025-05-11T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      95,
+      96
+    ]
+  },
+  {
+    "date": "2025-05-14T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      98
+    ]
+  },
+  {
+    "date": "2025-05-17T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      100,
+      101
+    ]
+  },
+  {
+    "date": "2025-05-19T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      102,
+      103
+    ]
+  },
+  {
+    "date": "2025-05-21T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      105,
+      106
+    ]
+  },
+  {
+    "date": "2025-05-27T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      109,
+      110
+    ]
+  },
+  {
+    "date": "2025-05-28T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      112
+    ]
+  },
+  {
+    "date": "2025-05-28T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      113,
+      114
+    ]
+  },
+  {
+    "date": "2025-05-31T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      116,
+      117
+    ]
+  },
+  {
+    "date": "2025-06-11T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      124
+    ]
+  },
+  {
+    "date": "2025-06-25T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      131
+    ]
+  },
+  {
+    "date": "2025-07-09T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      143
+    ]
+  },
+  {
+    "date": "2025-07-23T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      150
+    ]
+  },
+  {
+    "date": "2025-07-24T00:00:00",
+    "type": "diagnostic_order",
+    "title": "Quarterly panel",
+    "rationale": "3-month check",
+    "source_message_ids": [
+      152
+    ]
+  },
+  {
+    "date": "2025-07-28T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      155,
+      156
+    ]
+  },
+  {
+    "date": "2025-08-06T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      162
+    ]
+  },
+  {
+    "date": "2025-08-12T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      165,
+      166
+    ]
+  },
+  {
+    "date": "2025-08-15T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      169,
+      170
+    ]
+  },
+  {
+    "date": "2025-08-20T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      174
+    ]
+  },
+  {
+    "date": "2025-08-23T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      177,
+      178
+    ]
+  },
+  {
+    "date": "2025-09-03T00:00:00",
+    "type": "plan_update",
+    "title": "Exercise update EX",
+    "rationale": "Progression based on adherence",
+    "source_message_ids": [
+      182
+    ]
+  },
+  {
+    "date": "2025-09-06T00:00:00",
+    "type": "plan_change",
+    "title": "Swap intervals",
+    "rationale": "Logistics constraint",
+    "source_message_ids": [
+      185,
+      186
+    ]
+  }
+]
