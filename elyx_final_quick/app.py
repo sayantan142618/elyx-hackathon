@@ -37,10 +37,9 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.image(
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Logo_2023.svg/512px-Logo_2023.svg.png",
-    width=120
-)
+# Load local logo file (must be uploaded to repo)
+st.image("logo.png", width=120)
+
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data</div>", unsafe_allow_html=True)
 st.markdown("---")
@@ -95,4 +94,5 @@ st.line_chart(
         ['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']
     ]
 )
+
 
