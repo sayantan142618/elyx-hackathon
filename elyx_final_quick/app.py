@@ -15,7 +15,7 @@ st.set_page_config(
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / 'data'
 
-# --- Custom CSS for Branding & Aesthetics ---
+# --- Custom CSS ---
 st.markdown(
     """
     <style>
@@ -36,7 +36,7 @@ st.markdown(
         font-size: 50px !important;
         text-align: center;
         font-weight: 700;
-        color: #1a4f78; /* A professional blue */
+        color: #1a4f78;
         margin-top: -30px;
     }
     .sub-title {
@@ -76,10 +76,6 @@ st.markdown(
         padding: 10px 15px;
         margin: 5px 0;
     }
-    .speaker-name {
-        font-weight: bold;
-        color: #495057;
-    }
     </style>
     """,
     unsafe_allow_html=True
@@ -92,58 +88,46 @@ try:
     p = json.load((DATA_DIR / 'persona.json').open())
     metrics = pd.read_csv(DATA_DIR / 'internal_metrics.csv')
     metrics['date'] = pd.to_datetime(metrics['date'])
-    
-    # Pre-calculate metrics for a cleaner look
+
     metrics_summary = {
-        "Total Doctor Hours": round(metrics['doctor_hours'].sum(), 1),
-        "Total Performance Hours": round(metrics['performance_hours'].sum(), 1),
-        "Total Nutrition Hours": round(metrics['nutrition_hours'].sum(), 1),
-        "Total Concierge Hours": round(metrics['ruby_hours'].sum(), 1),
-        "Total PT Hours": round(metrics['pt_hours'].sum(), 1)
+        "Doctor Hours": round(metrics['doctor_hours'].sum(), 1),
+        "Performance Hours": round(metrics['performance_hours'].sum(), 1),
+        "Nutrition Hours": round(metrics['nutrition_hours'].sum(), 1),
+        "PT Hours": round(metrics['pt_hours'].sum(), 1),
+        "Concierge Hours": round(metrics['ruby_hours'].sum(), 1)
     }
 
 except FileNotFoundError:
-    st.error("Data files not found. Please ensure 'messages.json', 'decisions.json', 'persona.json', and 'internal_metrics.csv' are in a 'data' directory.")
-    st.stop()
-except KeyError as e:
-    st.error(f"A key is missing from your 'persona.json' file: {e}")
-    st.info("The app expects keys like 'member', 'age', 'occupation', and 'goals' in persona.json.")
+    st.error("❌ Missing data files in 'data' directory.")
     st.stop()
 
-
-# --- Main App Content ---
-st.image("https://elyx-hackathon-wryjvpb2hi3r6zxvy2ghbt.streamlit.app/app/static/logo.png", width=120)
-
+# --- Header ---
+st.image("logo.png", width=120)  # Local logo file
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
 
-## 1. Executive Summary & KPIs
-with st.container(border=True):
-    st.subheader('🚀 Member Profile & Key Metrics')
-    st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
-    st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
+# --- Member Profile ---
+st.subheader('🚀 Member Profile & Key Metrics')
+st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
+st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
+st.markdown("---")
 
-    st.markdown("---")
-    
-    col1, col2, col3, col4, col5 = st.columns(5)
-    with col1:
-        st.markdown(f"<div class='kpi-container'><div class='kpi-label'>Doctor Hours</div><div class='kpi-value'>{metrics_summary['Total Doctor Hours']}</div></div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"<div class='kpi-container'><div class='kpi-label'>Performance Hours</div><div class='kpi-value'>{metrics_summary['Total Performance Hours']}</div></div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"<div class='kpi-container'><div class='kpi-label'>Nutrition Hours</div><div class='kpi-value'>{metrics_summary['Total Nutrition Hours']}</div></div>", unsafe_allow_html=True)
-    with col4:
-        st.markdown(f"<div class='kpi-container'><div class='kpi-label'>PT Hours</div><div class='kpi-value'>{metrics_summary['Total PT Hours']}</div></div>", unsafe_allow_html=True)
-    with col5:
-        st.markdown(f"<div class='kpi-container'><div class='kpi-label'>Concierge Hours</div><div class='kpi-value'>{metrics_summary['Total Concierge Hours']}</div></div>", unsafe_allow_html=True)
+# --- KPI Cards ---
+col1, col2, col3 = st.columns(3)
+for i, (label, value) in enumerate(metrics_summary.items()):
+    with [col1, col2, col3][i % 3]:
+        st.markdown(
+            f"<div class='kpi-container'><div class='kpi-label'>{label}</div><div class='kpi-value'>{value}</div></div>",
+            unsafe_allow_html=True
+        )
 
 st.markdown("---")
 
-## 2. Dynamic Journey Timeline
+# --- Decisions Timeline with Enhanced Search ---
 st.subheader('🗺️ The Journey: Key Decisions Over Time')
+decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...").lower()
 
-# Mapping for decision types to emojis
 type_emojis = {
     "Medication": "💊",
     "Therapy": "🧠",
@@ -153,72 +137,43 @@ type_emojis = {
     "Logistics": "✈️"
 }
 
-decisions_by_date = sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date']))
-
-for dec in decisions_by_date:
-    emoji = type_emojis.get(dec['type'], "📌")
-    
-    with st.expander(f"{emoji} **{dec['date'][:10]}** — {dec['title']} ({dec['type']})"):
-        st.markdown(f"**Rationale:** {dec['rationale']}")
-        
-        # This section directly addresses the "Why was this decision made?" requirement.
-        st.markdown("---")
-        st.markdown(f"### 💬 **Traceback: The Communication Trail**")
-        
-        # Filter and display relevant messages
-        relevant_msgs = [m for m in msgs if m['id'] in dec['source_message_ids']]
-        for m in sorted(relevant_msgs, key=lambda m: m['timestamp']):
-            st.markdown(
-                f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{m['text']}</div>", 
-                unsafe_allow_html=True
-            )
+for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
+    searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
+    if decision_search in searchable_text or decision_search == "":
+        emoji = type_emojis.get(dec['type'], "📌")
+        with st.expander(f"{emoji} **{dec['date'][:10]}** — {dec['title']} ({dec['type']})"):
+            st.markdown(f"**Rationale:** {dec['rationale']}")
+            st.markdown("---")
+            st.markdown("### 💬 Communication Trail")
+            for m in [m for m in msgs if m['id'] in dec['source_message_ids']]:
+                st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{m['text']}</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
-## 3. Visualized Progress & Metrics
+# --- Metrics Chart ---
 st.subheader('📈 Progress Metrics')
-st.caption('Internal team hours spent over the 8-month period.')
-
-# Date range selection
 if not metrics.empty:
-    min_date = metrics['date'].min().date()
-    max_date = metrics['date'].max().date()
-    start_date, end_date = st.slider(
-        "Select Date Range",
-        min_value=min_date,
-        max_value=max_date,
-        value=(min_date, max_date),
-        format="YYYY-MM-DD"
-    )
+    min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
+    start_date, end_date = st.slider("Select Date Range", min_value=min_date, max_value=max_date, value=(min_date, max_date), format="YYYY-MM-DD")
 
-    filtered_metrics = metrics[
-        (metrics['date'].dt.date >= start_date) & 
-        (metrics['date'].dt.date <= end_date)
-    ]
-
-    # Create a more structured dataframe for the chart
-    chart_data = filtered_metrics.set_index('date')[
-        ['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']
-    ]
-
+    filtered_metrics = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
+    chart_data = filtered_metrics.set_index('date')[['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']]
     st.line_chart(chart_data)
 else:
-    st.info("No internal metrics data available to display.")
+    st.info("No metrics available.")
 
 st.markdown("---")
 
-## 4. The Conversation Log
+# --- Conversation Log with Search ---
 st.subheader('💬 Full Conversation Log')
+chat_search = st.text_input("🔍 Search conversations...").lower()
+filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
 
-# Search and filter functionality for chat messages
-chat_search = st.text_input("🔍 Search conversations...", help="Filter messages by keyword.")
-filtered_chat = [m for m in msgs if chat_search.lower() in m['text'].lower() or chat_search == ""]
-
-if not filtered_chat:
-    st.info("No messages found with that search term.")
-else:
-    for m in reversed(filtered_chat[-50:]): # Show most recent 50 messages, in reverse order
+if filtered_chat:
+    for m in reversed(filtered_chat[-50:]):
         st.markdown(f"**{m['speaker']}** <span style='color:#6c757d; font-size:12px;'>— {m['timestamp']}</span>", unsafe_allow_html=True)
         st.markdown(f"<div style='margin-bottom: 10px;'>{m['text']}</div>", unsafe_allow_html=True)
+else:
+    st.info("No messages found.")
 
 
