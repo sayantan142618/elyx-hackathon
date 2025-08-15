@@ -3,6 +3,7 @@ import pandas as pd
 import streamlit as st
 from pathlib import Path
 import datetime as dt
+import re
 
 # --- App Config ---
 st.set_page_config(
@@ -14,6 +15,13 @@ st.set_page_config(
 # --- Paths ---
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / 'data'
+
+# --- Highlight function ---
+def highlight_text(text, keyword):
+    if keyword:
+        pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+        return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
+    return text
 
 # --- Custom CSS ---
 st.markdown(
@@ -37,6 +45,12 @@ st.markdown(
         color: #495057;
         font-weight: 300;
         margin-bottom: 25px;
+    }
+    .logo {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 150px;
     }
     .kpi-container {
         padding: 15px;
@@ -63,8 +77,11 @@ st.markdown(
         padding: 10px 15px;
         margin: 8px 0;
     }
-    .search-bar input {
-        width: 100% !important;
+    mark {
+        background-color: yellow;
+        color: black;
+        padding: 0 2px;
+        border-radius: 2px;
     }
     </style>
     """,
@@ -90,9 +107,13 @@ try:
 except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
+except KeyError as e:
+    st.error(f"❌ A key is missing from your 'persona.json' file: {e}")
+    st.info("Please ensure 'persona.json' contains keys like 'member', 'age', 'occupation', and 'goals'.")
+    st.stop()
 
 # --- Header ---
-st.image("logo.png", width=120)  # Local logo file
+st.image("logo.png", use_column_width=False, output_format="PNG", caption="", width=120)
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
@@ -114,7 +135,7 @@ for i, (label, value) in enumerate(metrics_summary.items()):
 
 st.markdown("---")
 
-# --- Decisions Timeline with Enhanced Search ---
+# --- Decisions Timeline with Enhanced Search + Highlight ---
 st.subheader('🗺️ The Journey: Key Decisions Over Time')
 decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
 
@@ -131,11 +152,14 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
         emoji = type_emojis.get(dec['type'], "📌")
-        with st.expander(f"{emoji} **{dec['date'][:10]}** — {dec['title']} ({dec['type']})"):
-            st.markdown(f"**Rationale:** {dec['rationale']}")
+        with st.expander(f"{emoji} {dec['date'][:10]} — {dec['title']} ({dec['type']})"):
+            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
             st.markdown("### 💬 Communication Trail")
-            for m in [m for m in msgs if m['id'] in dec['source_message_ids']]:
-                st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{m['text']}</div>", unsafe_allow_html=True)
+            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+                st.markdown(
+                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                    unsafe_allow_html=True
+                )
 
 st.markdown("---")
 
@@ -152,14 +176,17 @@ else:
 
 st.markdown("---")
 
-# --- Conversation Log with Search ---
+# --- Conversation Log with Search + Highlight ---
 st.subheader('💬 Full Conversation Log')
 chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
 filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
 
 if filtered_chat:
     for m in reversed(filtered_chat[-50:]):
-        st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp']}</div><div>{m['text']}</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
+            unsafe_allow_html=True
+        )
 else:
     st.info("No messages found.")
 
