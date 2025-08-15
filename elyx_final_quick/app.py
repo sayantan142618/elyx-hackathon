@@ -6,7 +6,7 @@ import datetime as dt
 
 # --- App Config ---
 st.set_page_config(
-    page_title="Elyx Journey — Member 360", 
+    page_title="Elyx Journey — Member 360",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -105,9 +105,15 @@ try:
 except FileNotFoundError:
     st.error("Data files not found. Please ensure 'messages.json', 'decisions.json', 'persona.json', and 'internal_metrics.csv' are in a 'data' directory.")
     st.stop()
+except KeyError as e:
+    st.error(f"A key is missing from your 'persona.json' file: {e}")
+    st.info("The app expects keys like 'member', 'age', 'occupation', and 'goals' in persona.json.")
+    st.stop()
+
 
 # --- Main App Content ---
-st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Circle-icons-logo.svg/1024px-Circle-icons-logo.svg.png", width=120)
+st.image("https://elyx-hackathon-wryjvpb2hi3r6zxvy2ghbt.streamlit.app/app/static/logo.png", width=120)
+
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
@@ -115,8 +121,8 @@ st.markdown("---")
 ## 1. Executive Summary & KPIs
 with st.container(border=True):
     st.subheader('🚀 Member Profile & Key Metrics')
-    st.markdown(f"**Member:** {p['member']} | **Age:** {p['age']} | **Occupation:** {p['occupation']}")
-    st.markdown(f"**Core Goals:** {', '.join(p['goals'])}")
+    st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
+    st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
 
     st.markdown("---")
     
@@ -174,27 +180,30 @@ st.subheader('📈 Progress Metrics')
 st.caption('Internal team hours spent over the 8-month period.')
 
 # Date range selection
-min_date = metrics['date'].min().date()
-max_date = metrics['date'].max().date()
-start_date, end_date = st.slider(
-    "Select Date Range",
-    min_value=min_date,
-    max_value=max_date,
-    value=(min_date, max_date),
-    format="YYYY-MM-DD"
-)
+if not metrics.empty:
+    min_date = metrics['date'].min().date()
+    max_date = metrics['date'].max().date()
+    start_date, end_date = st.slider(
+        "Select Date Range",
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date),
+        format="YYYY-MM-DD"
+    )
 
-filtered_metrics = metrics[
-    (metrics['date'].dt.date >= start_date) & 
-    (metrics['date'].dt.date <= end_date)
-]
+    filtered_metrics = metrics[
+        (metrics['date'].dt.date >= start_date) & 
+        (metrics['date'].dt.date <= end_date)
+    ]
 
-# Create a more structured dataframe for the chart
-chart_data = filtered_metrics.set_index('date')[
-    ['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']
-]
+    # Create a more structured dataframe for the chart
+    chart_data = filtered_metrics.set_index('date')[
+        ['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']
+    ]
 
-st.line_chart(chart_data)
+    st.line_chart(chart_data)
+else:
+    st.info("No internal metrics data available to display.")
 
 st.markdown("---")
 
@@ -211,6 +220,5 @@ else:
     for m in reversed(filtered_chat[-50:]): # Show most recent 50 messages, in reverse order
         st.markdown(f"**{m['speaker']}** <span style='color:#6c757d; font-size:12px;'>— {m['timestamp']}</span>", unsafe_allow_html=True)
         st.markdown(f"<div style='margin-bottom: 10px;'>{m['text']}</div>", unsafe_allow_html=True)
-
 
 
