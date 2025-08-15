@@ -37,7 +37,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Load local logo file (must be uploaded to repo)
+# Load local logo file (upload logo.png into elyx_final_quick folder)
 st.image("logo.png", width=120)
 
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
@@ -59,12 +59,13 @@ col3.metric("Nutrition Hours", round(metrics['nutrition_hours'].sum(), 1))
 
 st.markdown("---")
 
-# --- Decisions & Trace with Search ---
+# --- Decisions & Trace with Enhanced Search ---
 st.subheader('📌 Decisions & Trace')
 search_term = st.text_input("🔍 Search decisions...").lower()
 
 for x in decs:
-    if search_term in x['title'].lower() or search_term == "":
+    searchable_text = f"{x['title']} {x['type']} {x['rationale']}".lower()
+    if search_term in searchable_text or search_term == "":
         with st.expander(f"🗂 {x['title']} • {x['type']} • {x['date'][:10]}"):
             st.write(x['rationale'])
             for m in [m for m in msgs if m['id'] in x['source_message_ids']]:
@@ -94,5 +95,6 @@ st.line_chart(
         ['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']
     ]
 )
+
 
 
