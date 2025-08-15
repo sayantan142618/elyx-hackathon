@@ -52,14 +52,20 @@ st.markdown(
         margin-right: auto;
         max-width: 150px;
     }
+    .kpi-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
     .kpi-container {
+        flex: 1 1 calc(33.33% - 15px);
+        min-width: 200px;
         padding: 15px;
         border-radius: 10px;
         background-color: #FFFFFF;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         text-align: center;
         border-left: 5px solid #1a4f78;
-        margin-bottom: 15px;
     }
     .kpi-label {
         font-size: 14px;
@@ -75,7 +81,9 @@ st.markdown(
         background-color: #E9ECEF;
         border-radius: 15px;
         padding: 10px 15px;
-        margin: 8px 0;
+        margin: 10px 0;
+        max-width: 100%;
+        word-wrap: break-word;
     }
     mark {
         background-color: yellow;
@@ -107,13 +115,9 @@ try:
 except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
-except KeyError as e:
-    st.error(f"❌ A key is missing from your 'persona.json' file: {e}")
-    st.info("Please ensure 'persona.json' contains keys like 'member', 'age', 'occupation', and 'goals'.")
-    st.stop()
 
 # --- Header ---
-st.image("logo.png", use_column_width=False, output_format="PNG", caption="", width=120)
+st.image("logo.png", use_container_width=False, width=120)  # Fixed parameter
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
@@ -123,19 +127,16 @@ st.subheader('🚀 Member Profile')
 st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
 st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
 
-# --- KPI Cards ---
+# --- KPI Cards (flexbox, no overlap) ---
 st.markdown("### 📊 Key Metrics")
-kpi_cols = st.columns(3)
-for i, (label, value) in enumerate(metrics_summary.items()):
-    with kpi_cols[i % 3]:
-        st.markdown(
-            f"<div class='kpi-container'><div class='kpi-label'>{label}</div><div class='kpi-value'>{value}</div></div>",
-            unsafe_allow_html=True
-        )
+st.markdown("<div class='kpi-grid'>" + "".join(
+    f"<div class='kpi-container'><div class='kpi-label'>{label}</div><div class='kpi-value'>{value}</div></div>"
+    for label, value in metrics_summary.items()
+) + "</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- Decisions Timeline with Enhanced Search + Highlight ---
+# --- Decisions Timeline with Search ---
 st.subheader('🗺️ The Journey: Key Decisions Over Time')
 decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
 
@@ -176,7 +177,7 @@ else:
 
 st.markdown("---")
 
-# --- Conversation Log with Search + Highlight ---
+# --- Conversation Log with Search ---
 st.subheader('💬 Full Conversation Log')
 chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
 filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
@@ -189,4 +190,5 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
