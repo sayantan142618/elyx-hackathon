@@ -16,14 +16,14 @@ st.set_page_config(
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / 'data'
 
-# --- Highlight function ---
+# --- Highlight search matches ---
 def highlight_text(text, keyword):
     if keyword:
         pattern = re.compile(re.escape(keyword), re.IGNORECASE)
         return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
     return text
 
-# --- Adaptive CSS for Light & Dark Mode ---
+# --- Adaptive CSS ---
 st.markdown(
     """
     <style>
@@ -129,7 +129,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- Load data ---
+# --- Load Data ---
 try:
     msgs = json.load((DATA_DIR / 'messages.json').open())
     decs = json.load((DATA_DIR / 'decisions.json').open())
@@ -182,12 +182,34 @@ type_emojis = {
     "Logistics": "✈️"
 }
 
+type_colors = {
+    "Medication": "#d9534f",
+    "Therapy": "#5bc0de",
+    "Diagnostic Test": "#5cb85c",
+    "Plan Update": "#f0ad4e",
+    "Lifestyle Change": "#0275d8",
+    "Logistics": "#6f42c1"
+}
+
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
         emoji = type_emojis.get(dec['type'], "📌")
-        with st.expander(f"{emoji} {dec['date'][:10]} — {dec['title']} ({dec['type']})"):
+        
+        # Short expander title
+        with st.expander(f"{emoji} {dec['date'][:10]} — {dec['title']}"):
+            
+            # Type tag
+            tag_color = type_colors.get(dec['type'], "#1a4f78")
+            st.markdown(
+                f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
+                unsafe_allow_html=True
+            )
+            
+            # Rationale
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+            
+            # Communication trail
             st.markdown("### 💬 Communication Trail")
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
@@ -201,7 +223,13 @@ st.markdown("---")
 st.subheader('📈 Progress Metrics')
 if not metrics.empty:
     min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
-    start_date, end_date = st.slider("Select Date Range", min_value=min_date, max_value=max_date, value=(min_date, max_date), format="YYYY-MM-DD")
+    start_date, end_date = st.slider(
+        "Select Date Range",
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date),
+        format="YYYY-MM-DD"
+    )
     filtered_metrics = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
     chart_data = filtered_metrics.set_index('date')[['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']]
     st.line_chart(chart_data)
