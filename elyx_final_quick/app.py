@@ -75,6 +75,11 @@ st.markdown(
         border-radius: 15px;
         padding: 10px 15px;
         margin: 5px 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .stExpander > button {
+        padding: 10px 20px;
     }
     </style>
     """,
@@ -100,9 +105,14 @@ try:
 except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
+except KeyError as e:
+    st.error(f"❌ A key is missing from your 'persona.json' file: {e}")
+    st.info("Please ensure 'persona.json' contains keys like 'member', 'age', 'occupation', and 'goals'.")
+    st.stop()
+
 
 # --- Header ---
-st.image("logo.png", width=120)  # Local logo file
+st.image("logo.png", width=120)
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
@@ -141,12 +151,20 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
         emoji = type_emojis.get(dec['type'], "📌")
-        with st.expander(f"{emoji} **{dec['date'][:10]}** — {dec['title']} ({dec['type']})"):
+        
+        # Corrected Expander Title Format
+        st_expander_title = f"{emoji} **{dec['date'][:10]}** — {dec['title']} ({dec['type']})"
+        with st.expander(st_expander_title):
             st.markdown(f"**Rationale:** {dec['rationale']}")
             st.markdown("---")
             st.markdown("### 💬 Communication Trail")
-            for m in [m for m in msgs if m['id'] in dec['source_message_ids']]:
-                st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{m['text']}</div>", unsafe_allow_html=True)
+            
+            # Corrected Chat Bubble Formatting with a clear layout
+            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+                st.markdown(
+                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{m['text']}</div>",
+                    unsafe_allow_html=True
+                )
 
 st.markdown("---")
 
@@ -166,7 +184,7 @@ st.markdown("---")
 
 # --- Conversation Log with Search ---
 st.subheader('💬 Full Conversation Log')
-chat_search = st.text_input("🔍 Search conversations...").lower()
+chat_search = st.text_input("🔍 Search conversations...", help="Filter messages by keyword.").lower()
 filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
 
 if filtered_chat:
@@ -175,5 +193,4 @@ if filtered_chat:
         st.markdown(f"<div style='margin-bottom: 10px;'>{m['text']}</div>", unsafe_allow_html=True)
 else:
     st.info("No messages found.")
-
 
