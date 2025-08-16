@@ -23,14 +23,33 @@ def highlight_text(text, keyword):
         return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
     return text
 
-# --- CSS for Styling ---
+# --- CSS ---
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-
 html, body, [class*="st-"] {
     font-family: 'Roboto', sans-serif;
     line-height: 1.6;
+}
+
+/* Light mode */
+[data-testid="stAppViewContainer"] {
+    background-color: #F8F9FA;
+    color: #212529;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    [data-testid="stAppViewContainer"] {
+        background-color: #121212 !important;
+        color: #EDEDED !important;
+    }
+    .kpi-container {
+        background-color: #1E1E1E !important;
+        border-left-color: #4DA3FF !important;
+    }
+    .chat-bubble {
+        background-color: #2A2A2A !important;
+    }
 }
 
 .big-title {
@@ -40,6 +59,7 @@ html, body, [class*="st-"] {
     color: #1a4f78;
     margin-bottom: 5px;
 }
+
 .sub-title {
     text-align: center;
     font-size: 18px;
@@ -52,9 +72,10 @@ html, body, [class*="st-"] {
     flex-wrap: wrap;
     gap: 20px;
 }
+
 .kpi-container {
     flex: 1 1 calc(33.33% - 20px);
-    min-width: 250px;
+    min-width: 220px;
     padding: 15px;
     border-radius: 10px;
     background-color: #FFFFFF;
@@ -62,17 +83,33 @@ html, body, [class*="st-"] {
     text-align: center;
     border-left: 5px solid #1a4f78;
 }
-.kpi-label { font-size: 14px; opacity: 0.8; }
-.kpi-value { font-size: 28px; font-weight: 700; }
+
+.kpi-label {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a4f78;
+}
+
+/* Dark mode overrides for KPI */
+@media (prefers-color-scheme: dark) {
+    .kpi-container { background-color: #1E1E1E !important; }
+    .kpi-label { color: #BBBBBB !important; }
+    .kpi-value { color: #4DA3FF !important; }
+}
 
 .chat-bubble {
     border-radius: 15px;
     padding: 12px 15px;
     margin: 10px 0;
-    max-width: 100%;
     word-wrap: break-word;
     background-color: #E9ECEF;
 }
+
 mark {
     background-color: yellow;
     color: black;
@@ -80,12 +117,11 @@ mark {
     border-radius: 2px;
 }
 
-/* Fix expander header overlap */
+/* Prevent expander title overlaps */
 .stExpander > button p {
-    margin-left: 8px !important;   /* give space from arrow */
-    white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    white-space: nowrap !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -117,8 +153,8 @@ st.markdown("---")
 
 # --- Member Profile ---
 st.subheader('🚀 Member Profile')
-st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
-st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
+st.markdown(f"**Member:** {p.get('member','N/A')} | **Age:** {p.get('age','N/A')} | **Occupation:** {p.get('occupation','N/A')}")
+st.markdown(f"**Core Goals:** {', '.join(p.get('goals',['N/A']))}")
 
 # --- KPI Cards ---
 st.markdown("### 📊 Key Metrics")
@@ -130,25 +166,36 @@ st.markdown("<div class='kpi-grid'>" + "".join(
 st.markdown("---")
 
 # --- Decisions Timeline ---
-st.subheader('🗺️ The Journey: Key Decisions Over Time')
+st.subheader("🗺️ The Journey: Key Decisions Over Time")
 decision_search = st.text_input("🔍 Search decisions...", key="decision_search").lower()
 
-type_emojis = {"Medication": "💊","Therapy": "🧠","Diagnostic Test": "🔬","Plan Update": "📝","Lifestyle Change": "🏋️","Logistics": "✈️"}
-type_colors = {"Medication": "#d9534f","Therapy": "#5bc0de","Diagnostic Test": "#5cb85c","Plan Update": "#f0ad4e","Lifestyle Change": "#0275d8","Logistics": "#6f42c1"}
+type_emojis = {
+    "Medication": "💊", "Therapy": "🧠", "Diagnostic Test": "🔬",
+    "Plan Update": "📝", "Lifestyle Change": "🏋️", "Logistics": "✈️"
+}
+
+type_colors = {
+    "Medication": "#d9534f", "Therapy": "#5bc0de",
+    "Diagnostic Test": "#5cb85c", "Plan Update": "#f0ad4e",
+    "Lifestyle Change": "#0275d8", "Logistics": "#6f42c1"
+}
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        # Very short header → avoids overlap
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['date'][:10]}"
-        with st.expander(expander_title, expanded=False):
+        
+        # Short expander header only
+        expander_title = f"{type_emojis.get(dec['type'],'📌')} {dec['date'][:10]}"
+        with st.expander(expander_title):
             st.markdown(f"### {dec['title']}")
+            
             tag_color = type_colors.get(dec['type'], "#1a4f78")
             st.markdown(
                 f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
                 unsafe_allow_html=True
             )
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+            
             st.markdown("### 💬 Communication Trail")
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
@@ -159,10 +206,10 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
 st.markdown("---")
 
 # --- Metrics Chart ---
-st.subheader('📈 Progress Metrics')
+st.subheader("📈 Progress Metrics")
 if not metrics.empty:
     min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
-    start_date, end_date = st.slider("Select Date Range", min_value=min_date, max_value=max_date, value=(min_date, max_date), format="YYYY-MM-DD")
+    start_date, end_date = st.slider("Select Date Range", min_value=min_date, max_value=max_date, value=(min_date,max_date), format="YYYY-MM-DD")
     filtered_metrics = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
     chart_data = filtered_metrics.set_index('date')[['doctor_hours','pt_hours','ruby_hours','performance_hours','nutrition_hours']]
     st.line_chart(chart_data)
@@ -172,9 +219,10 @@ else:
 st.markdown("---")
 
 # --- Conversation Log ---
-st.subheader('💬 Full Conversation Log')
+st.subheader("💬 Full Conversation Log")
 chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
 filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
+
 if filtered_chat:
     for m in reversed(filtered_chat[-50:]):
         st.markdown(
@@ -183,6 +231,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
