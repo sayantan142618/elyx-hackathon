@@ -12,30 +12,30 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Paths ---
-BASE_DIR = Path(__file__).parent
-DATA_DIR = BASE_DIR / 'data'
-
-# --- Highlight search matches ---
-def highlight_text(text, keyword):
-    if keyword:
-        pattern = re.compile(re.escape(keyword), re.IGNORECASE)
-        return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
-    return text
-
-# --- CSS for Styling ---
+# --- CSS Styling ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 html, body, [class*="st-"] {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto', sans-serif !important;
     line-height: 1.6;
 }
 
+/* ---------- THEME FIX ---------- */
+
 /* Light Mode */
 [data-testid="stAppViewContainer"] {
-    background-color: #F8F9FA;
+    background-color: #F8F9FA !important;
+    color: #212529 !important;
+}
+.chat-bubble {
+    background-color: #f5f5f5;
+    color: #212529;
+}
+.kpi-container {
+    background-color: #FFFFFF;
     color: #212529;
 }
 
@@ -45,37 +45,29 @@ html, body, [class*="st-"] {
         background-color: #121212 !important;
         color: #E0E0E0 !important;
     }
-    .timeline-card {
-        background-color: #1E1E1E !important;
-    }
     .chat-bubble {
         background-color: #2A2A2A !important;
         color: #E0E0E0 !important;
     }
+    .kpi-container {
+        background-color: #1E1E1E !important;
+        color: #E0E0E0 !important;
+        border-left: 5px solid #4DA3FF !important;
+    }
+    [data-testid="stExpander"] {
+        background-color: #1E1E1E !important;
+        color: #E0E0E0 !important;
+    }
 }
 
-/* Titles */
-.big-title {
-    font-size: 42px !important;
-    text-align: center;
-    font-weight: 700;
-    color: #1a4f78;
-    margin-bottom: 5px;
-}
-.sub-title {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 300;
-    margin-bottom: 25px;
-}
-.logo {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 150px;
+/* Expander fix: prevent overlap */
+.stExpander > button p {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
-/* KPI cards */
+/* KPI Cards */
 .kpi-grid {
     display: flex;
     flex-wrap: wrap;
@@ -87,7 +79,6 @@ html, body, [class*="st-"] {
     min-width: 220px;
     padding: 15px;
     border-radius: 10px;
-    background-color: #FFFFFF;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
     border-left: 5px solid #1a4f78;
@@ -103,11 +94,9 @@ html, body, [class*="st-"] {
 
 /* Chat bubbles */
 .chat-bubble {
-    border-radius: 15px;
-    padding: 12px 15px;
-    margin: 10px 0;
-    max-width: 100%;
-    word-wrap: break-word;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 6px 0;
 }
 
 /* Highlighted search */
@@ -117,37 +106,21 @@ mark {
     padding: 0 2px;
     border-radius: 2px;
 }
-
-/* Timeline cards */
-.timeline-card {
-    border: 1px solid #ced4da;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-}
-.timeline-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-}
-.timeline-title {
-    font-weight: bold;
-    font-size: 16px;
-}
-.timeline-date {
-    font-size: 13px;
-    opacity: 0.7;
-}
-.toggle-btn {
-    font-size: 14px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-}
 </style>
 """, unsafe_allow_html=True)
+
+
+# --- Highlight search matches ---
+def highlight_text(text, keyword):
+    if keyword:
+        pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+        return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
+    return text
+
+
+# --- Paths ---
+BASE_DIR = Path(__file__).parent
+DATA_DIR = BASE_DIR / 'data'
 
 # --- Load Data ---
 try:
@@ -168,16 +141,19 @@ except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
 
+
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
-st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align:center; color:#1a4f78;'>Elyx Journey — Member 360</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; font-size:18px;'>Empowering Decisions with Data to Maximize Health</p>", unsafe_allow_html=True)
 st.markdown("---")
+
 
 # --- Member Profile ---
 st.subheader('🚀 Member Profile')
 st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
 st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
+
 
 # --- KPI Cards ---
 st.markdown("### 📊 Key Metrics")
@@ -187,6 +163,7 @@ st.markdown("<div class='kpi-grid'>" + "".join(
 ) + "</div>", unsafe_allow_html=True)
 
 st.markdown("---")
+
 
 # --- Decisions Timeline ---
 st.subheader('🗺️ The Journey: Key Decisions Over Time')
@@ -200,56 +177,22 @@ type_emojis = {
     "Lifestyle Change": "🏋️",
     "Logistics": "✈️"
 }
-type_colors = {
-    "Medication": "#d9534f",
-    "Therapy": "#5bc0de",
-    "Diagnostic Test": "#5cb85c",
-    "Plan Update": "#f0ad4e",
-    "Lifestyle Change": "#0275d8",
-    "Logistics": "#6f42c1"
-}
-
-if "open_cards" not in st.session_state:
-    st.session_state.open_cards = {}
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        key = f"{dec['date']}_{dec['title']}"
-        is_open = st.session_state.open_cards.get(key, False)
-
-        # Timeline card
-        with st.container():
-            st.markdown("<div class='timeline-card'>", unsafe_allow_html=True)
-
-            # Header
-            col1, col2, col3 = st.columns([4, 2, 1])
-            with col1:
-                st.markdown(f"**{type_emojis.get(dec['type'], '📌')} {dec['title']}**", unsafe_allow_html=True)
-            with col2:
-                st.markdown(f"<div class='timeline-date'>{dec['date'][:10]}</div>", unsafe_allow_html=True)
-            with col3:
-                if st.button("▼" if is_open else "►", key=f"toggle_{key}"):
-                    st.session_state.open_cards[key] = not is_open
-
-            # Expanded content
-            if is_open:
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+        with st.expander(expander_title, expanded=False):
+            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+            st.markdown("### 💬 Communication Trail")
+            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
-                    f"<span style='background-color:{type_colors.get(dec['type'], '#1a4f78')}; "
-                    f"color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
+                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
                     unsafe_allow_html=True
                 )
-                st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
-                st.markdown("### 💬 Communication Trail")
-                for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
-                    st.markdown(
-                        f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
-                        unsafe_allow_html=True
-                    )
-
-            st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
+
 
 # --- Metrics Chart ---
 st.subheader('📈 Progress Metrics')
@@ -270,6 +213,7 @@ else:
 
 st.markdown("---")
 
+
 # --- Conversation Log ---
 st.subheader('💬 Full Conversation Log')
 chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
@@ -283,6 +227,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
