@@ -45,9 +45,8 @@ html, body, [class*="st-"] {
         background-color: #121212 !important;
         color: #E0E0E0 !important;
     }
-    .kpi-container {
+    .timeline-card {
         background-color: #1E1E1E !important;
-        border-left-color: #4DA3FF !important;
     }
     .chat-bubble {
         background-color: #2A2A2A !important;
@@ -118,6 +117,35 @@ mark {
     padding: 0 2px;
     border-radius: 2px;
 }
+
+/* Timeline cards */
+.timeline-card {
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+.timeline-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+.timeline-date {
+    font-size: 13px;
+    opacity: 0.7;
+}
+.toggle-btn {
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -181,31 +209,45 @@ type_colors = {
     "Logistics": "#6f42c1"
 }
 
+if "open_cards" not in st.session_state:
+    st.session_state.open_cards = {}
+
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        
-        # FIX: Expander only shows emoji + date (short title, no overlap)
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['date'][:10]}"
-        
-        with st.expander(expander_title, expanded=False):
-            # Full info INSIDE
-            st.markdown(f"### {dec['title']}", unsafe_allow_html=True)
-            tag_color = type_colors.get(dec['type'], "#1a4f78")
-            st.markdown(
-                f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
-                unsafe_allow_html=True
-            )
-            st.markdown("---")
-            
-            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
-            st.markdown("### 💬 Communication Trail")
-            
-            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+        key = f"{dec['date']}_{dec['title']}"
+        is_open = st.session_state.open_cards.get(key, False)
+
+        # Timeline card
+        with st.container():
+            st.markdown("<div class='timeline-card'>", unsafe_allow_html=True)
+
+            # Header
+            col1, col2, col3 = st.columns([4, 2, 1])
+            with col1:
+                st.markdown(f"**{type_emojis.get(dec['type'], '📌')} {dec['title']}**", unsafe_allow_html=True)
+            with col2:
+                st.markdown(f"<div class='timeline-date'>{dec['date'][:10]}</div>", unsafe_allow_html=True)
+            with col3:
+                if st.button("▼" if is_open else "►", key=f"toggle_{key}"):
+                    st.session_state.open_cards[key] = not is_open
+
+            # Expanded content
+            if is_open:
                 st.markdown(
-                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                    f"<span style='background-color:{type_colors.get(dec['type'], '#1a4f78')}; "
+                    f"color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
                     unsafe_allow_html=True
                 )
+                st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+                st.markdown("### 💬 Communication Trail")
+                for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+                    st.markdown(
+                        f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                        unsafe_allow_html=True
+                    )
+
+            st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("---")
 
