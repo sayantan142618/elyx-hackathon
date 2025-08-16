@@ -12,52 +12,53 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS Fix for Expander Overlap + Styling ---
-st.markdown("""
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<style>
-/* General font */
-html, body, [class*="st-"] {
-    font-family: 'Roboto', sans-serif;
-    line-height: 1.6;
-}
+# --- CSS Fix ---
+st.markdown(
+    """
+    <style>
+    /* General font */
+    html, body, [class*="st-"] {
+        font-family: 'Roboto', sans-serif;
+        line-height: 1.6;
+    }
 
-/* Expander title fix */
-.stExpander > div > div {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-.stExpander > div > div p {
-    margin: 0 !important;
-    flex: 1 !important;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+    /* Fix expander icon + text overlap */
+    .stExpander > div:first-child {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+    .stExpander > div:first-child p {
+        margin: 0 !important;
+        flex: 1 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
 
-/* Chat bubbles */
-.chat-bubble {
-    border-radius: 10px;
-    padding: 10px;
-    margin: 5px 0;
-    background: #f5f5f5;
-    color: #212529;
-}
-
-/* Dark mode improvements */
-@media (prefers-color-scheme: dark) {
+    /* Chat bubbles */
     .chat-bubble {
-        background: #2A2A2A !important;
-        color: #E0E0E0 !important;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 5px 0;
+        background: #f5f5f5;
+        color: #212529;
     }
-    .stExpander > div > div p {
-        color: #E0E0E0 !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
 
+    /* Dark mode improvements */
+    @media (prefers-color-scheme: dark) {
+        .chat-bubble {
+            background: #2A2A2A !important;
+            color: #E0E0E0 !important;
+        }
+        .stExpander > div:first-child p {
+            color: #E0E0E0 !important;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # --- Highlight search matches ---
 def highlight_text(text, keyword):
@@ -65,7 +66,6 @@ def highlight_text(text, keyword):
         pattern = re.compile(re.escape(keyword), re.IGNORECASE)
         return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
     return text
-
 
 # --- Paths ---
 BASE_DIR = Path(__file__).parent
@@ -90,19 +90,16 @@ except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
 
-
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
 st.markdown("<h1 style='text-align:center; color:#1a4f78;'>Elyx Journey — Member 360</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center; font-size:18px;'>Empowering Decisions with Data to Maximize Health</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-
 # --- Member Profile ---
 st.subheader('🚀 Member Profile')
 st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
 st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
-
 
 # --- KPI Cards ---
 st.markdown("### 📊 Key Metrics")
@@ -112,7 +109,6 @@ for i, (label, value) in enumerate(metrics_summary.items()):
         st.metric(label, value)
 
 st.markdown("---")
-
 
 # --- Decisions Timeline ---
 st.subheader('🗺️ The Journey: Key Decisions Over Time')
@@ -130,9 +126,7 @@ type_emojis = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        # ✅ Fixed expander header
         expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
-
         with st.expander(expander_title, expanded=False):
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
             st.markdown("### 💬 Communication Trail")
@@ -143,7 +137,6 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
                 )
 
 st.markdown("---")
-
 
 # --- Metrics Chart ---
 st.subheader('📈 Progress Metrics')
@@ -164,7 +157,6 @@ else:
 
 st.markdown("---")
 
-
 # --- Conversation Log ---
 st.subheader('💬 Full Conversation Log')
 chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
@@ -178,6 +170,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
