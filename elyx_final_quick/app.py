@@ -34,7 +34,7 @@ html, body, [class*="st-"] {
   line-height: 1.6;
 }
 
-/* Light Mode */
+/* Light */
 [data-testid="stAppViewContainer"] {
   background-color: #F8F9FA;
   color: #212529;
@@ -45,7 +45,7 @@ html, body, [class*="st-"] {
 }
 .kpi { border-left: 5px solid #1a4f78; }
 
-/* Dark Mode */
+/* Dark */
 @media (prefers-color-scheme: dark) {
   [data-testid="stAppViewContainer"] {
     background-color: #121212 !important;
@@ -79,6 +79,68 @@ html, body, [class*="st-"] {
   font-weight: 700;
   margin: 20px 0 10px;
   color: #1a4f78;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* KPI grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+.kpi {
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kpi:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+.kpi .label {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.kpi .value {
+  font-size: 26px;
+  font-weight: 700;
+}
+.kpi .icon {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+/* Timeline card */
+.card {
+  border: 1px solid #ced4da;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+/* Chat bubble */
+.chat-bubble {
+  border-radius: 10px;
+  padding: 10px;
+  margin: 6px 0;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+/* Highlight search */
+mark {
+  background-color: #FFE066;
+  color: #111;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -113,35 +175,25 @@ st.markdown("<div class='section-title'>🚀 Member Profile</div>", unsafe_allow
 st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
 st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
 
-# --- KPI Cards ---
+# --- KPI Cards with icons ---
+icons = ["🩺","⚡","🥗","🏋️","🤝"]
 st.markdown("<div class='section-title'>📊 Key Metrics</div>", unsafe_allow_html=True)
-cols = st.columns(3)
-for i, (label, value) in enumerate(metrics_summary.items()):
-    with cols[i % 3]:
-        st.metric(label, value)
-
+st.markdown(
+    "<div class='kpi-grid'>" +
+    "".join(
+        f"<div class='kpi'><div class='icon'>{icons[i]}</div>"
+        f"<div class='label'>{label}</div><div class='value'>{value}</div></div>"
+        for i,(label,value) in enumerate(metrics_summary.items())
+    ) +
+    "</div>", unsafe_allow_html=True
+)
 st.markdown("---")
 
 # --- Decisions Timeline ---
 st.markdown("<div class='section-title'>🗺️ The Journey: Key Decisions Over Time</div>", unsafe_allow_html=True)
 decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
 
-type_emojis = {
-    "Medication": "💊",
-    "Therapy": "🧠",
-    "Diagnostic Test": "🔬",
-    "Plan Update": "📝",
-    "Lifestyle Change": "🏋️",
-    "Logistics": "✈️"
-}
-type_colors = {
-    "Medication": "#d9534f",
-    "Therapy": "#5bc0de",
-    "Diagnostic Test": "#5cb85c",
-    "Plan Update": "#f0ad4e",
-    "Lifestyle Change": "#0275d8",
-    "Logistics": "#6f42c1"
-}
+type_emojis = {"Medication":"💊","Therapy":"🧠","Diagnostic Test":"🔬","Plan Update":"📝","Lifestyle Change":"🏋️","Logistics":"✈️"}
 
 if 'timeline_state' not in st.session_state:
     st.session_state.timeline_state = {}
@@ -151,7 +203,7 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     if decision_search in searchable_text or decision_search == "":
         card_placeholder = st.empty()
         if card_placeholder.button(
-            f"{type_emojis.get(dec['type'], '📌')} **{dec['title']}** — {dec['date'][:10]} ({dec['type']})",
+            f"{type_emojis.get(dec['type'],'📌')} **{dec['title']}** — {dec['date'][:10]} ({dec['type']})",
             key=f"card_{dec['date']}_{dec['title']}"
         ):
             st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
@@ -182,7 +234,7 @@ if not metrics.empty:
     with col3:
         if st.button("🔄 Reset"):
             start_date, end_date = min_date, max_date
-            st.experimental_set_query_params()  # clears state
+            st.experimental_set_query_params()
 
     start_date, end_date = st.slider(
         "Adjust Date Range:",
