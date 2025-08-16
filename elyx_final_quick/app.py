@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS Fix ---
+# --- CSS Fix for Expander Overlap ---
 st.markdown("""
 <style>
 /* General font */
@@ -21,15 +21,15 @@ html, body, [class*="st-"] {
     line-height: 1.6;
 }
 
-/* Fix expander title overlap */
-.stExpander > div > div {
+/* Fix overlapping expander title & arrow */
+.stExpander > div:first-child {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
 }
-.stExpander > div > div p {
+.stExpander > div:first-child p {
     margin: 0 !important;
-    flex-grow: 1 !important;
+    flex: 1 1 auto !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -129,7 +129,8 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
             st.markdown("### 💬 Communication Trail")
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
-                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                    f"<div class='chat-bubble'>"
+                    f"<b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
                     unsafe_allow_html=True
                 )
 
@@ -162,11 +163,13 @@ filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_sea
 if filtered_chat:
     for m in reversed(filtered_chat[-50:]):
         st.markdown(
-            f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
+            f"<div class='chat-bubble'>"
+            f"<b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
             unsafe_allow_html=True
         )
 else:
     st.info("No messages found.")
+
 
 
 
