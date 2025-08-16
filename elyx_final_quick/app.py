@@ -169,6 +169,84 @@ st.markdown("<div class='kpi-grid'>" + "".join(
     for label, value in metrics_summary.items()
 ) + "</div>", unsafe_allow_html=True)
 
+st.markdown("---")
+
+# --- Decisions Timeline ---
+st.subheader('🗺️ The Journey: Key Decisions Over Time')
+decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
+
+type_emojis = {
+    "Medication": "💊",
+    "Therapy": "🧠",
+    "Diagnostic Test": "🔬",
+    "Plan Update": "📝",
+    "Lifestyle Change": "🏋️",
+    "Logistics": "✈️"
+}
+
+type_colors = {
+    "Medication": "#d9534f",
+    "Therapy": "#5bc0de",
+    "Diagnostic Test": "#5cb85c",
+    "Plan Update": "#f0ad4e",
+    "Lifestyle Change": "#0275d8",
+    "Logistics": "#6f42c1"
+}
+
+for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
+    searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
+    if decision_search in searchable_text or decision_search == "":
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+        with st.expander(expander_title, expanded=False):
+            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+            tag_color = type_colors.get(dec['type'], "#1a4f78")
+            st.markdown(
+                f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
+                unsafe_allow_html=True
+            )
+            st.markdown("### 💬 Communication Trail")
+            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+                st.markdown(
+                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                    unsafe_allow_html=True
+                )
+
+st.markdown("---")
+
+# --- Metrics Chart ---
+st.subheader('📈 Progress Metrics')
+if not metrics.empty:
+    min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
+    start_date, end_date = st.slider(
+        "Select Date Range",
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date),
+        format="YYYY-MM-DD"
+    )
+    filtered_metrics = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
+    chart_data = filtered_metrics.set_index('date')[['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']]
+    st.line_chart(chart_data)
+else:
+    st.info("No metrics available.")
+
+st.markdown("---")
+
+# --- Conversation Log ---
+st.subheader('💬 Full Conversation Log')
+chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
+filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
+
+if filtered_chat:
+    for m in reversed(filtered_chat[-50:]):
+        st.markdown(
+            f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
+            unsafe_allow_html=True
+        )
+else:
+    st.info("No messages found.")
+
+
 
 
 
