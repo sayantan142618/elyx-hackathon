@@ -5,51 +5,54 @@ from pathlib import Path
 import datetime as dt
 import re
 
-st.set_page_config(page_title="Elyx Journey — Member 360", layout="wide")
+# --- App Config ---
+st.set_page_config(
+    page_title="Elyx Journey — Member 360",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- CSS ---
+# --- CSS Fix ---
 st.markdown("""
 <style>
-summary {
-    cursor: pointer;
-    padding: 10px 14px;
-    border-radius: 8px;
-    background: #1E1E1E;
-    color: #E0E0E0;
-    margin-bottom: 8px;
-    font-weight: bold;
-    list-style: none;
+/* General font */
+html, body, [class*="st-"] {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
 }
-summary::-webkit-details-marker { display: none; }
-details[open] summary {
-    background: #333;
+
+/* Fix expander title overlap */
+.stExpander > div > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 }
-.details-box {
-    padding: 12px;
-    margin: 6px 0 15px 0;
-    border: 1px solid #444;
-    border-radius: 8px;
-    background: #1A1A1A;
+.stExpander > div > div p {
+    margin: 0 !important;
+    flex-grow: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
-.tag {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-top: 5px;
-}
+
+/* Chat bubbles */
 .chat-bubble {
     border-radius: 10px;
     padding: 10px;
     margin: 5px 0;
-    background: #2A2A2A;
-    color: #E0E0E0;
+    background: #f5f5f5;
+    color: #212529;
 }
-mark {
-    background: yellow;
-    color: black;
-    padding: 0 2px;
-    border-radius: 2px;
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    .chat-bubble {
+        background: #2A2A2A !important;
+        color: #E0E0E0 !important;
+    }
+    .stExpander > div > div p {
+        color: #E0E0E0 !important;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -61,17 +64,53 @@ def highlight_text(text, keyword):
         return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
     return text
 
-# --- Dummy Data (replace with your JSON files) ---
-msgs = [
-    {"id": 1, "speaker": "Dr. Smith", "timestamp": "2025-01-21", "text": "Adjust workout routine."},
-    {"id": 2, "speaker": "Member", "timestamp": "2025-01-22", "text": "Feeling better after update."},
-]
-decs = [
-    {"date": "2025-01-21", "title": "Swap intervals", "type": "Plan Update", "rationale": "Better endurance.", "source_message_ids": [1]},
-    {"date": "2025-01-22", "title": "Exercise update EX", "type": "Lifestyle Change", "rationale": "Improved recovery.", "source_message_ids": [2]},
-]
+# --- Paths ---
+BASE_DIR = Path(__file__).parent
+DATA_DIR = BASE_DIR / 'data'
 
-# --- Decision Types ---
+# --- Load Data ---
+try:
+    msgs = json.load((DATA_DIR / 'messages.json').open())
+    decs = json.load((DATA_DIR / 'decisions.json').open())
+    p = json.load((DATA_DIR / 'persona.json').open())
+    metrics = pd.read_csv(DATA_DIR / 'internal_metrics.csv')
+    metrics['date'] = pd.to_datetime(metrics['date'])
+
+    metrics_summary = {
+        "Doctor Hours": round(metrics['doctor_hours'].sum(), 1),
+        "Performance Hours": round(metrics['performance_hours'].sum(), 1),
+        "Nutrition Hours": round(metrics['nutrition_hours'].sum(), 1),
+        "PT Hours": round(metrics['pt_hours'].sum(), 1),
+        "Concierge Hours": round(metrics['ruby_hours'].sum(), 1)
+    }
+except FileNotFoundError:
+    st.error("❌ Missing data files in 'data' directory.")
+    st.stop()
+
+# --- Header ---
+st.image("logo.png", use_container_width=False, width=120)
+st.markdown("<h1 style='text-align:center; color:#1a4f78;'>Elyx Journey — Member 360</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; font-size:18px;'>Empowering Decisions with Data to Maximize Health</p>", unsafe_allow_html=True)
+st.markdown("---")
+
+# --- Member Profile ---
+st.subheader('🚀 Member Profile')
+st.markdown(f"**Member:** {p.get('member', 'N/A')} | **Age:** {p.get('age', 'N/A')} | **Occupation:** {p.get('occupation', 'N/A')}")
+st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
+
+# --- KPI Cards ---
+st.markdown("### 📊 Key Metrics")
+cols = st.columns(3)
+for i, (label, value) in enumerate(metrics_summary.items()):
+    with cols[i % 3]:
+        st.metric(label, value)
+
+st.markdown("---")
+
+# --- Decisions Timeline ---
+st.subheader('🗺️ The Journey: Key Decisions Over Time')
+decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
+
 type_emojis = {
     "Medication": "💊",
     "Therapy": "🧠",
@@ -80,45 +119,55 @@ type_emojis = {
     "Lifestyle Change": "🏋️",
     "Logistics": "✈️"
 }
-type_colors = {
-    "Medication": "#d9534f",
-    "Therapy": "#5bc0de",
-    "Diagnostic Test": "#5cb85c",
-    "Plan Update": "#f0ad4e",
-    "Lifestyle Change": "#0275d8",
-    "Logistics": "#6f42c1"
-}
-
-# --- Timeline ---
-st.subheader("🗺️ The Journey: Key Decisions Over Time")
-decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        
-        # summary line (clickable)
-        summary_line = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
-        
-        # expanded details
-        details_html = f"""
-        <details>
-          <summary>{summary_line}</summary>
-          <div class="details-box">
-            <span class="tag" style="background:{type_colors.get(dec['type'], '#1a4f78')}; color:white;">{dec['type']}</span><br><br>
-            <b>Rationale:</b> {highlight_text(dec['rationale'], decision_search)}<br><br>
-            <b>💬 Communication Trail:</b>
-          </div>
-        </details>
-        """
-        st.markdown(details_html, unsafe_allow_html=True)
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+        with st.expander(expander_title, expanded=False):
+            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+            st.markdown("### 💬 Communication Trail")
+            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+                st.markdown(
+                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                    unsafe_allow_html=True
+                )
 
-        # messages
-        for m in [m for m in msgs if m['id'] in dec['source_message_ids']]:
-            st.markdown(
-                f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp']}<br>{highlight_text(m['text'], decision_search)}</div>",
-                unsafe_allow_html=True
-            )
+st.markdown("---")
+
+# --- Metrics Chart ---
+st.subheader('📈 Progress Metrics')
+if not metrics.empty:
+    min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
+    start_date, end_date = st.slider(
+        "Select Date Range",
+        min_value=min_date,
+        max_value=max_date,
+        value=(min_date, max_date),
+        format="YYYY-MM-DD"
+    )
+    filtered_metrics = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
+    chart_data = filtered_metrics.set_index('date')[['doctor_hours', 'pt_hours', 'ruby_hours', 'performance_hours', 'nutrition_hours']]
+    st.line_chart(chart_data)
+else:
+    st.info("No metrics available.")
+
+st.markdown("---")
+
+# --- Conversation Log ---
+st.subheader('💬 Full Conversation Log')
+chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
+filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
+
+if filtered_chat:
+    for m in reversed(filtered_chat[-50:]):
+        st.markdown(
+            f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
+            unsafe_allow_html=True
+        )
+else:
+    st.info("No messages found.")
+
 
 
 
