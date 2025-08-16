@@ -48,13 +48,6 @@ html, body, [class*="st-"] {
     .kpi-container {
         background-color: #1E1E1E !important;
         border-left-color: #4DA3FF !important;
-        color: #E0E0E0 !important;
-    }
-    .kpi-label {
-        color: #B0B0B0 !important;
-    }
-    .kpi-value {
-        color: #FFFFFF !important;
     }
     .chat-bubble {
         background-color: #2A2A2A !important;
@@ -62,7 +55,7 @@ html, body, [class*="st-"] {
     }
 }
 
-/* Headings */
+/* Titles */
 .big-title {
     font-size: 42px !important;
     text-align: center;
@@ -126,13 +119,21 @@ mark {
     border-radius: 2px;
 }
 
-/* Expander FIX */
-.stExpander > button p {
+/* 🚀 Expander FIX */
+.stExpander > div:first-child {
+    display: flex !important;
+    align-items: center !important;
+}
+.stExpander > div:first-child svg {
+    flex-shrink: 0 !important;
+    margin-right: 8px !important;
+}
+.stExpander > div:first-child p {
+    flex-grow: 1 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     margin: 0 !important;
-    max-width: calc(100% - 40px) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -200,24 +201,10 @@ type_colors = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        
-        # Limit title length to prevent overlap
-        trimmed_title = (dec['title'][:30] + "…") if len(dec['title']) > 30 else dec['title']
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {trimmed_title} ({dec['date'][:10]})"
-        
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
         with st.expander(expander_title, expanded=False):
-            st.markdown(f"### {type_emojis.get(dec['type'], '📌')} {dec['title']}")
-            
-            tag_color = type_colors.get(dec['type'], "#1a4f78")
-            st.markdown(
-                f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
-                unsafe_allow_html=True
-            )
-            st.markdown("---")
-            
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
             st.markdown("### 💬 Communication Trail")
-            
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
                     f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
@@ -258,6 +245,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
