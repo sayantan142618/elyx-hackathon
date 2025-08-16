@@ -42,23 +42,20 @@ html, body, [class*="st-"] {
 /* Dark Mode */
 @media (prefers-color-scheme: dark) {
     [data-testid="stAppViewContainer"] {
-        background-color: #1E1E1E !important;
+        background-color: #121212 !important;
         color: #E0E0E0 !important;
     }
     .kpi-container {
-        background-color: #2A2A2A !important;
+        background-color: #1E1E1E !important;
         border-left-color: #4DA3FF !important;
     }
     .chat-bubble {
-        background-color: #2C2C2C !important;
-        color: #E0E0E0 !important;
-    }
-    .big-title, .sub-title, .kpi-value, .kpi-label {
+        background-color: #2A2A2A !important;
         color: #E0E0E0 !important;
     }
 }
 
-/* Titles */
+/* Headings */
 .big-title {
     font-size: 42px !important;
     text-align: center;
@@ -66,25 +63,29 @@ html, body, [class*="st-"] {
     color: #1a4f78;
     margin-bottom: 5px;
 }
-
 .sub-title {
     text-align: center;
     font-size: 18px;
     font-weight: 300;
     margin-bottom: 25px;
 }
+.logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 150px;
+}
 
-/* KPI Grid */
+/* KPI cards */
 .kpi-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: flex-start;
 }
-
 .kpi-container {
     flex: 1 1 calc(33.33% - 20px);
-    min-width: 250px;
+    min-width: 220px;
     padding: 15px;
     border-radius: 10px;
     background-color: #FFFFFF;
@@ -92,12 +93,10 @@ html, body, [class*="st-"] {
     text-align: center;
     border-left: 5px solid #1a4f78;
 }
-
 .kpi-label {
     font-size: 14px;
     opacity: 0.8;
 }
-
 .kpi-value {
     font-size: 28px;
     font-weight: 700;
@@ -110,11 +109,9 @@ html, body, [class*="st-"] {
     margin: 10px 0;
     max-width: 100%;
     word-wrap: break-word;
-    background-color: #E9ECEF;
-    color: #212529;
 }
 
-/* Highlight text */
+/* Highlighted search */
 mark {
     background-color: yellow;
     color: black;
@@ -122,12 +119,16 @@ mark {
     border-radius: 2px;
 }
 
-/* Expander titles fix (prevent overlap) */
+/* Expander fix */
+.stExpander > div:first-child {
+    display: flex;
+    align-items: center;
+    padding-right: 20px; /* space before arrow */
+}
 .stExpander > button p {
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: calc(100% - 30px) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -183,7 +184,6 @@ type_emojis = {
     "Lifestyle Change": "🏋️",
     "Logistics": "✈️"
 }
-
 type_colors = {
     "Medication": "#d9534f",
     "Therapy": "#5bc0de",
@@ -196,14 +196,22 @@ type_colors = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+
+        # Minimal expander header (fixes overlap)
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']}"
+
         with st.expander(expander_title, expanded=False):
-            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+            st.markdown(f"**📅 Date:** {dec['date'][:10]}")
+
             tag_color = type_colors.get(dec['type'], "#1a4f78")
             st.markdown(
                 f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
                 unsafe_allow_html=True
             )
+
+            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+
+            # Communication trail
             st.markdown("### 💬 Communication Trail")
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
@@ -245,8 +253,6 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
-
-
 
 
 
