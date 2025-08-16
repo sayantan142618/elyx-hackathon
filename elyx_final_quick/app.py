@@ -12,54 +12,9 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS Fix for Expander Titles ---
-st.markdown("""
-<style>
-/* General font */
-html, body, [class*="st-"] {
-    font-family: 'Roboto', sans-serif;
-    line-height: 1.6;
-}
-
-/* Expander header layout fix */
-.stExpander > div:first-child {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-
-/* Expander title text */
-.stExpander > div:first-child p {
-    margin: 0 !important;
-    flex: 1 1 auto !important;
-    white-space: nowrap !important;   /* change to normal if you want wrapping */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    font-weight: 600 !important;
-    color: inherit !important;
-}
-
-/* Chat bubbles */
-.chat-bubble {
-    border-radius: 10px;
-    padding: 10px;
-    margin: 5px 0;
-    background: #f5f5f5;
-    color: #212529;
-}
-
-/* Dark mode improvements */
-@media (prefers-color-scheme: dark) {
-    .chat-bubble {
-        background: #2A2A2A !important;
-        color: #E0E0E0 !important;
-    }
-    .stExpander > div:first-child p {
-        color: #E0E0E0 !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
+# --- Paths ---
+BASE_DIR = Path(__file__).parent
+DATA_DIR = BASE_DIR / 'data'
 
 # --- Highlight search matches ---
 def highlight_text(text, keyword):
@@ -68,9 +23,152 @@ def highlight_text(text, keyword):
         return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
     return text
 
-# --- Paths ---
-BASE_DIR = Path(__file__).parent
-DATA_DIR = BASE_DIR / 'data'
+# --- Adaptive CSS ---
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+html, body, [class*="st-"] {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+}
+
+/* Light Mode */
+[data-testid="stAppViewContainer"] {
+    background-color: #F8F9FA;
+    color: #212529;
+}
+.timeline-card {
+    background-color: #FFFFFF;
+    color: #212529;
+}
+.kpi-container {
+    background-color: #FFFFFF;
+    border-left-color: #1a4f78;
+}
+.chat-bubble {
+    background: #f5f5f5;
+    color: #212529;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    [data-testid="stAppViewContainer"] {
+        background-color: #121212 !important;
+        color: #E0E0E0 !important;
+    }
+    .timeline-card {
+        background-color: #1E1E1E !important;
+        color: #E0E0E0 !important;
+        border-color: #333333 !important;
+    }
+    .kpi-container {
+        background-color: #1E1E1E !important;
+        border-left-color: #4DA3FF !important;
+    }
+    .chat-bubble {
+        background: #2A2A2A !important;
+        color: #E0E0E0 !important;
+    }
+}
+
+/* Titles */
+.big-title {
+    font-size: 42px !important;
+    text-align: center;
+    font-weight: 700;
+    color: #1a4f78;
+    margin-bottom: 5px;
+}
+.sub-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: 25px;
+}
+.logo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 150px;
+}
+
+/* KPI cards */
+.kpi-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+}
+.kpi-container {
+    flex: 1 1 calc(33.33% - 20px);
+    min-width: 220px;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-left: 5px solid #1a4f78;
+}
+.kpi-label {
+    font-size: 14px;
+    opacity: 0.8;
+}
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Chat bubbles */
+.chat-bubble {
+    border-radius: 10px;
+    padding: 10px;
+    margin: 5px 0;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+/* Highlighted search */
+mark {
+    background-color: yellow;
+    color: black;
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* Custom timeline cards to replace expanders */
+.timeline-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    margin-bottom: 10px;
+    transition: all 0.2s ease-in-out;
+}
+.timeline-card-header:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.timeline-card-title {
+    font-weight: 600;
+    flex-grow: 1;
+}
+.timeline-card-date {
+    font-size: 0.9em;
+    opacity: 0.7;
+    margin-right: 10px;
+}
+.timeline-card-icon {
+    font-size: 1.5em;
+    transition: transform 0.2s;
+}
+.timeline-card-icon.rotated {
+    transform: rotate(90deg);
+}
+</style>
+""", unsafe_allow_html=True)
 
 # --- Load Data ---
 try:
@@ -123,20 +221,46 @@ type_emojis = {
     "Lifestyle Change": "🏋️",
     "Logistics": "✈️"
 }
+type_colors = {
+    "Medication": "#d9534f",
+    "Therapy": "#5bc0de",
+    "Diagnostic Test": "#5cb85c",
+    "Plan Update": "#f0ad4e",
+    "Lifestyle Change": "#0275d8",
+    "Logistics": "#6f42c1"
+}
+
+# Use a session state to manage the visibility of content for each decision
+if 'timeline_state' not in st.session_state:
+    st.session_state.timeline_state = {}
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
+    
     if decision_search in searchable_text or decision_search == "":
-        # Clean expander title (no overlap with arrow)
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} — {dec['date'][:10]}"
-        with st.expander(expander_title, expanded=False):
-            st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
-            st.markdown("### 💬 Communication Trail")
-            for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
-                st.markdown(
-                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
-                    unsafe_allow_html=True
-                )
+        
+        # New: This replaces the st.expander with a custom container and a button
+        card_placeholder = st.empty()
+        
+        # Check if the button for this card has been clicked
+        if card_placeholder.button(
+            f"{type_emojis.get(dec['type'], '📌')} **{dec['title']}** — {dec['date'][:10]} ({dec['type']})",
+            key=f"card_{dec['date']}_{dec['title']}"
+        ):
+            # Toggle the visibility state
+            st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
+            st.rerun()
+
+        # Check if the content should be shown
+        if st.session_state.timeline_state.get(dec['title'], False):
+            with st.container(border=True):
+                st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
+                st.markdown("### 💬 Communication Trail")
+                for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
+                    st.markdown(
+                        f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                        unsafe_allow_html=True
+                    )
 
 st.markdown("---")
 
@@ -172,7 +296,6 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
-
 
 
 
