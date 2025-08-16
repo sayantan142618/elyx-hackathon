@@ -24,7 +24,7 @@ def highlight_text(text, keyword):
     pattern = re.compile(re.escape(keyword), re.IGNORECASE)
     return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
 
-# --- Adaptive CSS ---
+# --- CSS (kept from Code 1) ---
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -39,13 +39,14 @@ html, body, [class*="st-"] {
   background-color: #F8F9FA;
   color: #212529;
 }
-.timeline-card {
-  background-color: #FFFFFF;
+.card {
+  background: #FFFFFF;
   color: #212529;
 }
-.kpi-container {
-  background-color: #FFFFFF;
-  border-left-color: #1a4f78;
+.kpi {
+  background: #FFFFFF;
+  color: #212529;
+  border-left: 5px solid #1a4f78;
 }
 .chat-bubble {
   background: #f5f5f5;
@@ -58,13 +59,14 @@ html, body, [class*="st-"] {
     background-color: #121212 !important;
     color: #E0E0E0 !important;
   }
-  .timeline-card {
-    background-color: #1E1E1E !important;
+  .card {
+    background: #1E1E1E !important;
     color: #E0E0E0 !important;
     border-color: #333 !important;
   }
-  .kpi-container {
-    background-color: #1E1E1E !important;
+  .kpi {
+    background: #1E1E1E !important;
+    color: #E0E0E0 !important;
     border-left-color: #4DA3FF !important;
   }
   .chat-bubble {
@@ -87,48 +89,77 @@ html, body, [class*="st-"] {
   font-weight: 300;
   margin-bottom: 25px;
 }
-.logo {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 150px;
-}
 
-/* KPI cards */
+/* KPI grid */
 .kpi-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
 }
-.kpi-container {
-  flex: 1 1 calc(33.33% - 20px);
-  min-width: 220px;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  border-left: 5px solid #1a4f78;
+.kpi {
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
 }
-.kpi-label {
-  font-size: 14px;
+.kpi .label {
+  font-size: 13px;
   opacity: 0.8;
 }
-.kpi-value {
-  font-size: 28px;
+.kpi .value {
+  font-size: 26px;
   font-weight: 700;
 }
 
-/* Chat bubbles */
+/* Cards */
+.card {
+  border: 1px solid #ced4da;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.card-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+.card-title {
+  font-weight: 700;
+  font-size: 18px;
+  flex: 1;
+}
+.card-meta {
+  font-size: 13px;
+  opacity: .7;
+}
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+/* Chat bubble */
 .chat-bubble {
   border-radius: 10px;
   padding: 10px;
-  margin: 5px 0;
+  margin: 6px 0;
   max-width: 100%;
   word-wrap: break-word;
 }
 
-/* Highlighted search */
+/* Highlight */
 mark {
   background-color: #FFE066;
   color: #111;
@@ -145,22 +176,23 @@ try:
     p = json.load((DATA_DIR / 'persona.json').open())
     metrics = pd.read_csv(DATA_DIR / 'internal_metrics.csv')
     metrics['date'] = pd.to_datetime(metrics['date'])
-
-    metrics_summary = {
-        "Doctor Hours": round(metrics['doctor_hours'].sum(), 1),
-        "Performance Hours": round(metrics['performance_hours'].sum(), 1),
-        "Nutrition Hours": round(metrics['nutrition_hours'].sum(), 1),
-        "PT Hours": round(metrics['pt_hours'].sum(), 1),
-        "Concierge Hours": round(metrics['ruby_hours'].sum(), 1)
-    }
 except FileNotFoundError:
     st.error("❌ Missing data files in 'data' directory.")
     st.stop()
 
+# --- KPI summary ---
+metrics_summary = {
+    "Doctor Hours": round(metrics['doctor_hours'].sum(), 1),
+    "Performance Hours": round(metrics['performance_hours'].sum(), 1),
+    "Nutrition Hours": round(metrics['nutrition_hours'].sum(), 1),
+    "PT Hours": round(metrics['pt_hours'].sum(), 1),
+    "Concierge Hours": round(metrics['ruby_hours'].sum(), 1)
+}
+
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
-st.markdown("<h1 class='big-title'>Elyx Journey — Member 360</h1>", unsafe_allow_html=True)
-st.markdown("<p class='sub-title'>Empowering Decisions with Data to Maximize Health</p>", unsafe_allow_html=True)
+st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
 
 # --- Member Profile ---
@@ -170,16 +202,17 @@ st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
 
 # --- KPI Cards ---
 st.markdown("### 📊 Key Metrics")
-cols = st.columns(3)
-for i, (label, value) in enumerate(metrics_summary.items()):
-    with cols[i % 3]:
-        st.metric(label, value)
-
+st.markdown(
+    "<div class='kpi-grid'>" +
+    "".join(f"<div class='kpi'><div class='label'>{k}</div><div class='value'>{v}</div></div>"
+            for k, v in metrics_summary.items()) +
+    "</div>", unsafe_allow_html=True
+)
 st.markdown("---")
 
-# --- Decisions Timeline ---
-st.subheader('🗺️ The Journey: Key Decisions Over Time')
-decision_search = st.text_input("🔍 Search decisions (title, type, or rationale)...", key="decision_search").lower()
+# --- Timeline ---
+st.subheader('🗺️ The Journey: Key Decisions')
+decision_search = st.text_input("🔍 Search decisions...").lower()
 
 type_emojis = {
     "Medication": "💊",
@@ -189,50 +222,53 @@ type_emojis = {
     "Lifestyle Change": "🏋️",
     "Logistics": "✈️"
 }
-
-if 'timeline_state' not in st.session_state:
-    st.session_state.timeline_state = {}
+type_colors = {
+    "Medication": "#d9534f",
+    "Therapy": "#5bc0de",
+    "Diagnostic Test": "#5cb85c",
+    "Plan Update": "#f0ad4e",
+    "Lifestyle Change": "#0275d8",
+    "Logistics": "#6f42c1"
+}
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
-    searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
-    if decision_search in searchable_text or decision_search == "":
-        card_placeholder = st.empty()
-        if card_placeholder.button(
-            f"{type_emojis.get(dec['type'], '📌')} **{dec['title']}** — {dec['date'][:10]} ({dec['type']})",
-            key=f"card_{dec['date']}_{dec['title']}"
-        ):
-            st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
-            st.rerun()
-
-        if st.session_state.timeline_state.get(dec['title'], False):
-            with st.container(border=True):
-                st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
-                st.markdown("### 💬 Communication Trail")
-                for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
-                    st.markdown(
-                        f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
-                        unsafe_allow_html=True
-                    )
+    searchable = f"{dec.get('title','')} {dec.get('type','')} {dec.get('rationale','')}".lower()
+    if decision_search in searchable or not decision_search:
+        emoji = type_emojis.get(dec.get('type',''), '📌')
+        color = type_colors.get(dec.get('type',''), '#1a4f78')
+        st.markdown(
+            f"""
+            <div class="card">
+              <div class="card-header">
+                <div class="card-emoji">{emoji}</div>
+                <div class="card-title">{dec.get('title','')}</div>
+                <div class="card-meta">{dec.get('date','')[:10]}</div>
+                <span class="pill" style="background:{color}">{dec.get('type','')}</span>
+              </div>
+              <div><b>Rationale:</b> {highlight_text(dec.get('rationale',''), decision_search)}</div>
+            </div>
+            """, unsafe_allow_html=True
+        )
 
 st.markdown("---")
 
 # --- Progress Metrics ---
-st.subheader('📈 Progress Metrics')
+st.subheader("📈 Progress Metrics")
 if not metrics.empty:
     min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
 
-    col1, col2, col3 = st.columns([1, 1, 0.5])
+    # Date inputs
+    col1, col2, col3 = st.columns([1,1,0.5])
     with col1:
-        start_date = st.date_input("Start Date", min_date, min_value=min_date, max_value=max_date, key="start_date")
+        start_date = st.date_input("Start Date", min_date, min_value=min_date, max_value=max_date)
     with col2:
-        end_date = st.date_input("End Date", max_date, min_value=min_date, max_value=max_date, key="end_date")
+        end_date = st.date_input("End Date", max_date, min_value=min_date, max_value=max_date)
     with col3:
         if st.button("🔄 Reset Range"):
             start_date, end_date = min_date, max_date
-            st.session_state["start_date"] = min_date
-            st.session_state["end_date"] = max_date
             st.rerun()
 
+    # Slider
     start_date, end_date = st.slider(
         "Or adjust with slider:",
         min_value=min_date,
@@ -242,46 +278,27 @@ if not metrics.empty:
     )
 
     filtered = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
-
     if not filtered.empty:
         hours_df = filtered.melt(
-            id_vars=['date'],
+            id_vars='date',
             value_vars=['doctor_hours','pt_hours','ruby_hours','performance_hours','nutrition_hours'],
             var_name='Type', value_name='Hours'
         )
         chart = alt.Chart(hours_df).mark_area(opacity=0.7).encode(
-            x='date:T',
-            y='Hours:Q',
-            color='Type:N',
+            x='date:T', y='Hours:Q', color='Type:N',
             tooltip=['date:T','Type:N','Hours:Q']
-        ).interactive()
+        )
         st.altair_chart(chart, use_container_width=True)
 
         if 'hrv' in filtered.columns:
-            line = alt.Chart(filtered).mark_line(point=True).encode(
-                x='date:T', y='hrv:Q', tooltip=['date:T','hrv:Q']
+            st.altair_chart(
+                alt.Chart(filtered).mark_line(point=True).encode(
+                    x='date:T', y='hrv:Q', tooltip=['date:T','hrv:Q']
+                ), use_container_width=True
             )
-            st.altair_chart(line, use_container_width=True)
     else:
-        st.info("No data for this date range.")
-else:
-    st.info("No metrics available.")
+        st.info("No data for this range.")
 
-st.markdown("---")
-
-# --- Conversation Log ---
-st.subheader('💬 Full Conversation Log')
-chat_search = st.text_input("🔍 Search conversations...", key="chat_search").lower()
-filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_search == ""]
-
-if filtered_chat:
-    for m in reversed(filtered_chat[-50:]):
-        st.markdown(
-            f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
-            unsafe_allow_html=True
-        )
-else:
-    st.info("No messages found.")
 
 
 
