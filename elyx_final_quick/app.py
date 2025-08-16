@@ -143,10 +143,13 @@ type_colors = {"Medication":"#d9534f","Therapy":"#5bc0de","Diagnostic Test":"#5c
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d["date"])):
     searchable_text = f"{dec.get('title','')} {dec.get('type','')} {dec.get('rationale','')} {dec.get('description','')}".lower()
     if decision_search in searchable_text or decision_search == "":
-        if st.button(f"{type_emojis.get(dec['type'],'📌')} **{dec.get('title','Untitled')}** — {dec.get('date','')[:10]} ({dec.get('type','Unknown')})",
+        # Toggle header button
+        if st.button(f"{type_emojis.get(dec['type'],'📌')} {dec.get('title','Untitled')} — {dec.get('date','')[:10]} ({dec.get('type','Unknown')})",
                      key=f"card_{dec['date']}_{dec['title']}"):
             st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
             st.rerun()
+
+        # Expanded content
         if st.session_state.timeline_state.get(dec['title'], False):
             st.markdown("<div class='card'>", unsafe_allow_html=True)
             st.markdown(f"**Rationale:** {highlight_text(dec.get('rationale','—'), decision_search)}", unsafe_allow_html=True)
@@ -199,6 +202,7 @@ if filtered_chat:
         st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> — {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>", unsafe_allow_html=True)
 else:
     st.info("No messages found.")
+
 
 
 
