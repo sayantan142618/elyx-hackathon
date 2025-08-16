@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS Fix for Expander Overlap ---
+# --- CSS Fix for Expander Titles ---
 st.markdown("""
 <style>
 /* General font */
@@ -21,18 +21,22 @@ html, body, [class*="st-"] {
     line-height: 1.6;
 }
 
-/* Fix overlapping expander title & arrow */
+/* Expander header layout fix */
 .stExpander > div:first-child {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
 }
+
+/* Expander title text */
 .stExpander > div:first-child p {
     margin: 0 !important;
     flex: 1 1 auto !important;
-    white-space: nowrap !important;
+    white-space: nowrap !important;   /* change to normal if you want wrapping */
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    font-weight: 600 !important;
+    color: inherit !important;
 }
 
 /* Chat bubbles */
@@ -50,7 +54,7 @@ html, body, [class*="st-"] {
         background: #2A2A2A !important;
         color: #E0E0E0 !important;
     }
-    .stExpander > div > div p {
+    .stExpander > div:first-child p {
         color: #E0E0E0 !important;
     }
 }
@@ -123,14 +127,14 @@ type_emojis = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+        # Clean expander title (no overlap with arrow)
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} — {dec['date'][:10]}"
         with st.expander(expander_title, expanded=False):
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
             st.markdown("### 💬 Communication Trail")
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
-                    f"<div class='chat-bubble'>"
-                    f"<b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
+                    f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
                     unsafe_allow_html=True
                 )
 
@@ -163,12 +167,12 @@ filtered_chat = [m for m in msgs if chat_search in m['text'].lower() or chat_sea
 if filtered_chat:
     for m in reversed(filtered_chat[-50:]):
         st.markdown(
-            f"<div class='chat-bubble'>"
-            f"<b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
+            f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>",
             unsafe_allow_html=True
         )
 else:
     st.info("No messages found.")
+
 
 
 
