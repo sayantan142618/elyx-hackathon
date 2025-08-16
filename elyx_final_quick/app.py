@@ -27,7 +27,6 @@ def highlight_text(text, keyword):
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 html, body, [class*="st-"] {
     font-family: 'Roboto', sans-serif;
@@ -49,6 +48,13 @@ html, body, [class*="st-"] {
     .kpi-container {
         background-color: #1E1E1E !important;
         border-left-color: #4DA3FF !important;
+        color: #E0E0E0 !important;
+    }
+    .kpi-label {
+        color: #B0B0B0 !important;
+    }
+    .kpi-value {
+        color: #FFFFFF !important;
     }
     .chat-bubble {
         background-color: #2A2A2A !important;
@@ -195,12 +201,12 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
         
-        # FIX: Simplified expander title to prevent overlap
-        expander_title = f"{dec['date'][:10]}"
+        # Limit title length to prevent overlap
+        trimmed_title = (dec['title'][:30] + "…") if len(dec['title']) > 30 else dec['title']
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {trimmed_title} ({dec['date'][:10]})"
+        
         with st.expander(expander_title, expanded=False):
-            
-            # Moved title, emoji, and type inside the expander
-            st.markdown(f"### {type_emojis.get(dec['type'], '📌')} {dec['title']}", unsafe_allow_html=True)
+            st.markdown(f"### {type_emojis.get(dec['type'], '📌')} {dec['title']}")
             
             tag_color = type_colors.get(dec['type'], "#1a4f78")
             st.markdown(
@@ -252,6 +258,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
