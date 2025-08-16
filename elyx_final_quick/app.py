@@ -118,23 +118,6 @@ mark {
     padding: 0 2px;
     border-radius: 2px;
 }
-
-/* 🚀 Expander FIX */
-.stExpander > div:first-child {
-    display: flex !important;
-    align-items: center !important;
-}
-.stExpander > div:first-child svg {
-    flex-shrink: 0 !important;
-    margin-right: 8px !important;
-}
-.stExpander > div:first-child p {
-    flex-grow: 1 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    margin: 0 !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -201,10 +184,23 @@ type_colors = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+        
+        # FIX: Expander only shows emoji + date (short title, no overlap)
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['date'][:10]}"
+        
         with st.expander(expander_title, expanded=False):
+            # Full info INSIDE
+            st.markdown(f"### {dec['title']}", unsafe_allow_html=True)
+            tag_color = type_colors.get(dec['type'], "#1a4f78")
+            st.markdown(
+                f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
+                unsafe_allow_html=True
+            )
+            st.markdown("---")
+            
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
             st.markdown("### 💬 Communication Trail")
+            
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
                     f"<div class='chat-bubble'><b>{m['speaker']}</b> - {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>",
