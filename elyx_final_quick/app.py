@@ -27,6 +27,7 @@ def highlight_text(text, keyword):
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons'); /* Fix for expander arrows */
 
 html, body, [class*="st-"] {
     font-family: 'Roboto', sans-serif;
@@ -119,16 +120,13 @@ mark {
     border-radius: 2px;
 }
 
-/* Expander fix */
-.stExpander > div:first-child {
-    display: flex;
-    align-items: center;
-    padding-right: 20px; /* space before arrow */
-}
+/* Expander FIX */
 .stExpander > button p {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+    max-width: calc(100% - 40px); /* ensures space for arrow icon */
 }
 </style>
 """, unsafe_allow_html=True)
@@ -196,22 +194,15 @@ type_colors = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
-
-        # Minimal expander header (fixes overlap)
-        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']}"
-
+        expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
         with st.expander(expander_title, expanded=False):
-            st.markdown(f"**📅 Date:** {dec['date'][:10]}")
-
+            # Type tag
             tag_color = type_colors.get(dec['type'], "#1a4f78")
             st.markdown(
                 f"<span style='background-color:{tag_color}; color:white; padding:4px 8px; border-radius:6px; font-size:12px;'>{dec['type']}</span>",
                 unsafe_allow_html=True
             )
-
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
-
-            # Communication trail
             st.markdown("### 💬 Communication Trail")
             for m in sorted([m for m in msgs if m['id'] in dec['source_message_ids']], key=lambda x: x['timestamp']):
                 st.markdown(
@@ -253,6 +244,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
