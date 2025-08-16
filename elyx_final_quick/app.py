@@ -12,99 +12,48 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS Styling ---
+# --- CSS Fix for Expander Overlap + Styling ---
 st.markdown("""
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-
+/* General font */
 html, body, [class*="st-"] {
-    font-family: 'Roboto', sans-serif !important;
+    font-family: 'Roboto', sans-serif;
     line-height: 1.6;
 }
 
-/* ---------- THEME FIX ---------- */
-
-/* Light Mode */
-[data-testid="stAppViewContainer"] {
-    background-color: #F8F9FA !important;
-    color: #212529 !important;
+/* Expander title fix */
+.stExpander > div > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 }
-.chat-bubble {
-    background-color: #f5f5f5;
-    color: #212529;
-}
-.kpi-container {
-    background-color: #FFFFFF;
-    color: #212529;
-}
-
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-    [data-testid="stAppViewContainer"] {
-        background-color: #121212 !important;
-        color: #E0E0E0 !important;
-    }
-    .chat-bubble {
-        background-color: #2A2A2A !important;
-        color: #E0E0E0 !important;
-    }
-    .kpi-container {
-        background-color: #1E1E1E !important;
-        color: #E0E0E0 !important;
-        border-left: 5px solid #4DA3FF !important;
-    }
-    [data-testid="stExpander"] {
-        background-color: #1E1E1E !important;
-        color: #E0E0E0 !important;
-    }
-}
-
-/* Expander fix: prevent overlap */
-.stExpander > button p {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-/* KPI Cards */
-.kpi-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: flex-start;
-}
-.kpi-container {
-    flex: 1 1 calc(33.33% - 20px);
-    min-width: 220px;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    border-left: 5px solid #1a4f78;
-}
-.kpi-label {
-    font-size: 14px;
-    opacity: 0.8;
-}
-.kpi-value {
-    font-size: 28px;
-    font-weight: 700;
+.stExpander > div > div p {
+    margin: 0 !important;
+    flex: 1 !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Chat bubbles */
 .chat-bubble {
     border-radius: 10px;
     padding: 10px;
-    margin: 6px 0;
+    margin: 5px 0;
+    background: #f5f5f5;
+    color: #212529;
 }
 
-/* Highlighted search */
-mark {
-    background-color: yellow;
-    color: black;
-    padding: 0 2px;
-    border-radius: 2px;
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+    .chat-bubble {
+        background: #2A2A2A !important;
+        color: #E0E0E0 !important;
+    }
+    .stExpander > div > div p {
+        color: #E0E0E0 !important;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -157,10 +106,10 @@ st.markdown(f"**Core Goals:** {', '.join(p.get('goals', ['N/A']))}")
 
 # --- KPI Cards ---
 st.markdown("### 📊 Key Metrics")
-st.markdown("<div class='kpi-grid'>" + "".join(
-    f"<div class='kpi-container'><div class='kpi-label'>{label}</div><div class='kpi-value'>{value}</div></div>"
-    for label, value in metrics_summary.items()
-) + "</div>", unsafe_allow_html=True)
+cols = st.columns(3)
+for i, (label, value) in enumerate(metrics_summary.items()):
+    with cols[i % 3]:
+        st.metric(label, value)
 
 st.markdown("---")
 
@@ -181,7 +130,9 @@ type_emojis = {
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d['date'])):
     searchable_text = f"{dec['title']} {dec['type']} {dec['rationale']}".lower()
     if decision_search in searchable_text or decision_search == "":
+        # ✅ Fixed expander header
         expander_title = f"{type_emojis.get(dec['type'], '📌')} {dec['title']} ({dec['date'][:10]})"
+
         with st.expander(expander_title, expanded=False):
             st.markdown(f"**Rationale:** {highlight_text(dec['rationale'], decision_search)}", unsafe_allow_html=True)
             st.markdown("### 💬 Communication Trail")
@@ -227,6 +178,7 @@ if filtered_chat:
         )
 else:
     st.info("No messages found.")
+
 
 
 
