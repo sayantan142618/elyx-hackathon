@@ -60,7 +60,6 @@ metrics_summary = {
 # --- CSS ---
 light_css = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
 html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6; }
 [data-testid="stAppViewContainer"] { background-color: #F8F9FA; color: #212529; }
 .big-title { font-size: 42px; text-align: center; font-weight: 700; color: #1a4f78; margin-bottom: 5px; }
@@ -76,7 +75,6 @@ mark { background: #FFE066; color: #111; padding: 0 2px; border-radius: 2px; }
 
 dark_css = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
 html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6; }
 [data-testid="stAppViewContainer"] { background-color: #121212 !important; color: #E0E0E0 !important; }
 .big-title { font-size: 42px; text-align: center; font-weight: 700; color: #4DA3FF; margin-bottom: 5px; }
@@ -91,15 +89,6 @@ mark { background: #FFB347; color: black; padding: 0 2px; border-radius: 2px; }
 """
 
 st.markdown(light_css if theme_choice == "Light" else dark_css, unsafe_allow_html=True)
-
-# FIX: CSS to hide the sidebar toggle button
-st.markdown("""
-<style>
-button[kind="header"] {
-    display: none;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
@@ -128,44 +117,35 @@ st.markdown("<div id='journey-timeline' class='section-title'>🗺️ Journey Ti
 decision_search = st.text_input("🔍 Search decisions...", key="decision_search").lower().strip()
 type_emojis = {"Medication": "💊","Therapy": "🧠","Diagnostic Test": "🔬","Plan Update": "📝","Lifestyle Change": "🏋️","Logistics": "✈️"}
 
-# FIX: Removed session state for visibility to prevent complex reruns
-# Using expander directly with simplified titles.
+if "timeline_state" not in st.session_state: st.session_state.timeline_state = {}
+
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d["date"])):
     searchable_text = f"{dec.get('title','')} {dec.get('type','')} {dec.get('rationale','')} {dec.get('description','')}".lower()
-    
     if decision_search in searchable_text or decision_search == "":
-        # FIX: The core fix for the overlapping text issue.
-        # This simplifies the expander title to just the date and title.
-        # This prevents the text from running into the expander's internal icon.
-        expander_title = f"{type_emojis.get(dec['type'],'📌')} **{dec.get('title','Untitled')}**"
+        if st.button(
+            f"{type_emojis.get(dec['type'],'📌')} {dec.get('title','Untitled')} — {dec.get('date','')[:10]} ({dec.get('type','Unknown')})",
+            key=f"card_{dec['date']}_{dec['title']}"
+        ):
+            st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
+            st.rerun()
 
-        with st.expander(expander_title, expanded=False):
-            # Move the date and type inside the expander for clear, non-overlapping display
-            st.markdown(f"**Date:** {dec.get('date','')[:10]}", unsafe_allow_html=True)
-            st.markdown(f"**Type:** {dec.get('type','Unknown')}", unsafe_allow_html=True)
+        if st.session_state.timeline_state.get(dec['title'], False):
             st.markdown(f"**Rationale:** {highlight_text(dec.get('rationale','—'), decision_search)}", unsafe_allow_html=True)
-            
             if dec.get("description"):
                 st.markdown(highlight_text(dec["description"], decision_search), unsafe_allow_html=True)
-            
-            # This is the "Before and After" analysis
             if dec.get("before") or dec.get("after"):
-                st.markdown(f"**Before:** {dec.get('before','—')}<br>**After:** {dec.get('after','—')}", unsafe_allow_html=True)
-
+                st.markdown(f"<b>Before:</b> {dec.get('before','—')}<br><b>After:</b> {dec.get('after','—')}", unsafe_allow_html=True)
             related = [m for m in msgs if m['id'] in dec.get('source_message_ids',[])]
             if related:
-                st.markdown("---")
                 st.markdown("**💬 Communication Trail**")
                 for m in sorted(related, key=lambda x: x['timestamp']):
                     st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> — {m['timestamp'][:10]}<br>{highlight_text(m['text'], decision_search)}</div>", unsafe_allow_html=True)
-
 st.markdown("---")
 
 # --- Progress Metrics ---
 st.markdown("<div id='progress-metrics' class='section-title'>📈 Progress Metrics</div>", unsafe_allow_html=True)
 if not metrics.empty:
     min_date, max_date = metrics['date'].min().date(), metrics['date'].max().date()
-    
     if "start_date" not in st.session_state: st.session_state["start_date"] = min_date
     if "end_date" not in st.session_state: st.session_state["end_date"] = max_date
 
@@ -187,7 +167,6 @@ if not metrics.empty:
                 x="date:T", y="Hours:Q", color="Pillar:N", tooltip=["date:T","Pillar:N","Hours:Q"]
             ).properties(height=280)
             st.altair_chart(chart, use_container_width=True)
-        
         if "hrv" in filtered.columns:
             line = alt.Chart(filtered).mark_line(point=True).encode(x="date:T", y="hrv:Q", tooltip=["date:T","hrv:Q"]).properties(height=260, title="HRV Trend")
             st.altair_chart(line, use_container_width=True)
@@ -206,6 +185,7 @@ if filtered_chat:
         st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> — {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>", unsafe_allow_html=True)
 else:
     st.info("No messages found.")
+
 
 
 
