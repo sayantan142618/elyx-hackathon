@@ -24,15 +24,6 @@ def highlight_text(text, keyword):
     pattern = re.compile(re.escape(keyword), re.IGNORECASE)
     return pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
 
-def safe_percent_change(series):
-    try:
-        s = pd.to_numeric(series, errors="coerce").dropna()
-        if len(s) >= 2 and s.iloc[0] != 0:
-            return round((s.iloc[-1] - s.iloc[0]) / abs(s.iloc[0]) * 100.0, 1)
-    except Exception:
-        pass
-    return None
-
 # --- Sidebar Navigation ---
 st.sidebar.markdown("## 📂 Navigation")
 st.sidebar.markdown("- [🚀 Member Profile](#member-profile)")
@@ -40,7 +31,6 @@ st.sidebar.markdown("- [📊 Key Metrics](#key-metrics)")
 st.sidebar.markdown("- [🗺️ Journey Timeline](#journey-timeline)")
 st.sidebar.markdown("- [📈 Progress Metrics](#progress-metrics)")
 st.sidebar.markdown("- [💬 Conversation Log](#conversation-log)")
-st.sidebar.markdown("- [🤖 AI Insights](#ai-insights)")
 
 theme_choice = st.sidebar.radio("🎨 Theme", ["Light", "Dark"], horizontal=True)
 
@@ -70,7 +60,7 @@ metrics_summary = {
 # --- CSS ---
 light_css = """
 <style>
-html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6; scroll-behavior: smooth; }
+html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6; }
 [data-testid="stAppViewContainer"] { background-color: #F8F9FA; color: #212529; }
 .big-title { font-size: 42px; text-align: center; font-weight: 700; color: #1a4f78; margin-bottom: 5px; }
 .sub-title { text-align: center; font-size: 18px; font-weight: 300; margin-bottom: 25px; }
@@ -80,15 +70,12 @@ html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6
 .chat-bubble { background: #f5f5f5; border-radius: 8px; padding: 10px; margin: 6px 0; color: #212529; }
 mark { background: #FFE066; color: #111; padding: 0 2px; border-radius: 2px; }
 .section-title { font-size:28px; font-weight:700; margin:20px 0 10px 0; color:#1a4f78; }
-.hero { background: linear-gradient(90deg,#1a4f78,#2679b8); color:white; padding:16px; border-radius:12px; text-align:center; font-size:18px; margin:10px 0 20px 0; }
-.pill-filter { display:inline-block; padding:6px 12px; margin:2px; border-radius:20px; font-size:13px; cursor:pointer; background:#e7f1fb; color:#1a4f78; }
-.pill-filter.active { background:#1a4f78; color:white; font-weight:600; }
 </style>
 """
 
 dark_css = """
 <style>
-html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6; scroll-behavior: smooth; }
+html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6; }
 [data-testid="stAppViewContainer"] { background-color: #121212 !important; color: #E0E0E0 !important; }
 .big-title { font-size: 42px; text-align: center; font-weight: 700; color: #4DA3FF; margin-bottom: 5px; }
 .sub-title { text-align: center; font-size: 18px; font-weight: 300; margin-bottom: 25px; color: #bbb; }
@@ -98,32 +85,25 @@ html, body, [class*="st-"] { font-family: 'Roboto', sans-serif; line-height: 1.6
 .chat-bubble { background: #2A2A2A; border-radius: 8px; padding: 10px; margin: 6px 0; color: #E0E0E0; }
 mark { background: #FFB347; color: black; padding: 0 2px; border-radius: 2px; }
 .section-title { font-size:28px; font-weight:700; margin:20px 0 10px 0; color:#4DA3FF; }
-.hero { background: linear-gradient(90deg,#1a4f78,#4DA3FF); color:white; padding:16px; border-radius:12px; text-align:center; font-size:18px; margin:10px 0 20px 0; }
-.pill-filter { display:inline-block; padding:6px 12px; margin:2px; border-radius:20px; font-size:13px; cursor:pointer; background:#2A2A2A; color:#4DA3FF; border:1px solid #4DA3FF; }
-.pill-filter.active { background:#4DA3FF; color:black; font-weight:600; }
 </style>
 """
 
 st.markdown(light_css if theme_choice == "Light" else dark_css, unsafe_allow_html=True)
+
+# --- Hide sidebar toggle button (keyboard_double_arrow_right) ---
+st.markdown("""
+<style>
+button[kind="header"] {
+    display: none;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Empowering Decisions with Data to Maximize Health</div>", unsafe_allow_html=True)
 st.markdown("---")
-
-# --- Hero Summary ---
-total_hours = sum(metrics_summary.values())
-first_date = metrics['date'].min().date() if not metrics.empty else "—"
-last_date = metrics['date'].max().date() if not metrics.empty else "—"
-hrv_change = safe_percent_change(metrics['hrv']) if 'hrv' in metrics.columns else None
-fatigue_change = safe_percent_change(metrics['fatigue']) if 'fatigue' in metrics.columns else None
-
-hero_bits = [f"Journey from {first_date} → {last_date}: <b>{int(total_hours)} total hours</b> engaged."]
-if hrv_change is not None: hero_bits.append(f"HRV change: <b>{'+' if hrv_change>=0 else ''}{hrv_change}%</b>.")
-if fatigue_change is not None: hero_bits.append(f"Fatigue change: <b>{'+' if fatigue_change>=0 else ''}{fatigue_change}%</b>.")
-
-st.markdown(f"<div class='hero'>📊 {' '.join(hero_bits)}</div>", unsafe_allow_html=True)
 
 # ================= Sections =================
 
@@ -144,23 +124,11 @@ st.markdown("---")
 # --- Journey Timeline ---
 st.markdown("<div id='journey-timeline' class='section-title'>🗺️ Journey Timeline</div>", unsafe_allow_html=True)
 decision_search = st.text_input("🔍 Search decisions...", key="decision_search").lower().strip()
-
-# Pillar filter chips
-pillar_options = ["All","Autonomic","Structural","Biochemical","Emotional","Behavioral"]
-if "active_pillar" not in st.session_state: st.session_state.active_pillar = "All"
-cols = st.columns(len(pillar_options))
-for i, p_name in enumerate(pillar_options):
-    active = "active" if st.session_state.active_pillar == p_name else ""
-    if cols[i].button(p_name, key=f"pill_{p_name}"):
-        st.session_state.active_pillar = p_name
-st.markdown("---")
-
 type_emojis = {"Medication": "💊","Therapy": "🧠","Diagnostic Test": "🔬","Plan Update": "📝","Lifestyle Change": "🏋️","Logistics": "✈️"}
+
 if "timeline_state" not in st.session_state: st.session_state.timeline_state = {}
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d["date"])):
-    if st.session_state.active_pillar != "All" and dec.get("pillar","") != st.session_state.active_pillar:
-        continue
     searchable_text = f"{dec.get('title','')} {dec.get('type','')} {dec.get('rationale','')} {dec.get('description','')}".lower()
     if decision_search in searchable_text or decision_search == "":
         if st.button(
@@ -169,6 +137,7 @@ for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d["date"])):
         ):
             st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
             st.rerun()
+
         if st.session_state.timeline_state.get(dec['title'], False):
             st.markdown(f"**Rationale:** {highlight_text(dec.get('rationale','—'), decision_search)}", unsafe_allow_html=True)
             if dec.get("description"):
@@ -196,6 +165,7 @@ if not metrics.empty:
         if st.button("🔄 Reset"):
             st.session_state["start_date"], st.session_state["end_date"] = min_date, max_date
             st.rerun()
+
     st.session_state["start_date"], st.session_state["end_date"] = start_date, end_date
     filtered = metrics[(metrics['date'].dt.date >= start_date) & (metrics['date'].dt.date <= end_date)]
     if not filtered.empty:
@@ -224,18 +194,7 @@ if filtered_chat:
         st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> — {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>", unsafe_allow_html=True)
 else:
     st.info("No messages found.")
-st.markdown("---")
 
-# --- AI Insights ---
-st.markdown("<div id='ai-insights' class='section-title'>🤖 AI Insights</div>", unsafe_allow_html=True)
-insights = []
-if hrv_change: insights.append(f"📈 HRV improved by {hrv_change}% across the journey.")
-if fatigue_change: insights.append(f"💤 Fatigue shifted by {fatigue_change}%.")
-if total_hours: insights.append(f"🕒 Engagement spread across pillars totals {total_hours} hours.")
-if metrics_summary.get("Performance Hours",0) > max(metrics_summary.values())/3:
-    insights.append("🏋️ Performance coaching had the largest contribution.")
-if not insights: insights.append("No major trends detected.")
-for i in insights: st.markdown(f"- {i}")
 
 
 
