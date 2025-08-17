@@ -90,6 +90,15 @@ mark { background: #FFB347; color: black; padding: 0 2px; border-radius: 2px; }
 
 st.markdown(light_css if theme_choice == "Light" else dark_css, unsafe_allow_html=True)
 
+# --- Hide sidebar toggle button (keyboard_double_arrow_right) ---
+st.markdown("""
+<style>
+button[kind="header"] {
+    display: none;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
 st.markdown("<div class='big-title'>Elyx Journey — Member 360</div>", unsafe_allow_html=True)
