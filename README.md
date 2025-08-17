@@ -37,17 +37,17 @@ It integrates **key metrics, timeline decisions, progress tracking, and communic
 📂 Project Structure
 elyx-journey/
 │
-├── app.py                # Main Streamlit app
-├── data/                 # Data files (JSON/CSV)
-│   ├── persona.json
-│   ├── decisions.json
-│   ├── messages.json
-│   └── internal_metrics.csv
-├── docs/                 # Documentation assets (screenshots, etc.)
-│   └── screenshots/
-│       ├── light_mode.png
-│       └── dark_mode.png
-└── requirements.txt      # Dependencies
+├── app.py # Main Streamlit app
+├── data/ # Data files (JSON/CSV)
+│ ├── persona.json
+│ ├── decisions.json
+│ ├── messages.json
+│ └── internal_metrics.csv
+├── docs/ # Documentation assets (screenshots, etc.)
+│ └── screenshots/
+│ ├── light_mode.png
+│ └── dark_mode.png
+└── requirements.txt # Dependencies
 
 🚀 Roadmap / Future Enhancements
 
