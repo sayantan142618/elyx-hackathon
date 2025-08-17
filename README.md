@@ -34,16 +34,6 @@ It integrates **key metrics, timeline decisions, progress tracking, and communic
 
 ---
 
-## 📸 Screenshots
-
-### 🔹 Light Mode  
-![Light Mode Screenshot](docs/screenshots/light_mode.png)
-
-### 🔹 Dark Mode  
-![Dark Mode Screenshot](docs/screenshots/dark_mode.png)
-
----
-
 📂 Project Structure
 elyx-journey/
 │
