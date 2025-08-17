@@ -88,34 +88,40 @@ mark { background: #FFB347; color: black; padding: 0 2px; border-radius: 2px; }
 </style>
 """
 
-# --- Extra Fix: Button Styling (Light + Dark) ---
+# --- Extra Fix: Button Styling (Light + Dark + Type-specific) ---
 button_css = """
 <style>
-/* Light Mode buttons */
 [data-testid="stButton"] > button {
-    background-color: #1a4f78 !important;
-    color: white !important;
     border-radius: 8px !important;
     padding: 6px 14px !important;
     border: none !important;
     font-weight: 600 !important;
     margin: 4px 0;
+    transition: 0.2s all ease-in-out;
 }
-[data-testid="stButton"] > button:hover {
-    background-color: #15506b !important;
-    color: #fff !important;
-    box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+/* Default Light */
+[data-testid="stAppViewContainer"] .stButton>button {
+    background-color: #1a4f78 !important;
+    color: white !important;
 }
-
-/* Dark Mode buttons */
+[data-testid="stAppViewContainer"] .stButton>button:hover {
+    opacity: 0.9; box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+}
+/* Default Dark */
 [data-testid="stAppViewContainer"][data-baseweb="baseweb"] .stButton>button {
     background-color: #2A2A2A !important;
     color: #E0E0E0 !important;
 }
 [data-testid="stAppViewContainer"][data-baseweb="baseweb"] .stButton>button:hover {
-    background-color: #333 !important;
-    color: #fff !important;
+    background-color: #333 !important; color: #fff !important;
 }
+/* Type-specific colors */
+button.medication { background-color: #d9534f !important; color: white !important; }
+button.therapy { background-color: #5bc0de !important; color: white !important; }
+button.diagnostic { background-color: #f0ad4e !important; color: white !important; }
+button.planupdate { background-color: #5cb85c !important; color: white !important; }
+button.lifestyle { background-color: #337ab7 !important; color: white !important; }
+button.logistics { background-color: #9b59b6 !important; color: white !important; }
 </style>
 """
 
@@ -149,17 +155,41 @@ st.markdown("<div id='journey-timeline' class='section-title'>🗺️ Journey Ti
 decision_search = st.text_input("🔍 Search decisions...", key="decision_search").lower().strip()
 type_emojis = {"Medication": "💊","Therapy": "🧠","Diagnostic Test": "🔬","Plan Update": "📝","Lifestyle Change": "🏋️","Logistics": "✈️"}
 
+# map type → css class
+type_classes = {
+    "Medication": "medication",
+    "Therapy": "therapy",
+    "Diagnostic Test": "diagnostic",
+    "Plan Update": "planupdate",
+    "Lifestyle Change": "lifestyle",
+    "Logistics": "logistics"
+}
+
 if "timeline_state" not in st.session_state: st.session_state.timeline_state = {}
 
 for dec in sorted(decs, key=lambda d: dt.datetime.fromisoformat(d["date"])):
     searchable_text = f"{dec.get('title','')} {dec.get('type','')} {dec.get('rationale','')} {dec.get('description','')}".lower()
     if decision_search in searchable_text or decision_search == "":
-        if st.button(
-            f"{type_emojis.get(dec['type'],'📌')} {dec.get('title','Untitled')} — {dec.get('date','')[:10]} ({dec.get('type','Unknown')})",
-            key=f"card_{dec['date']}_{dec['title']}"
-        ):
+        btn_label = f"{type_emojis.get(dec['type'],'📌')} {dec.get('title','Untitled')} — {dec.get('date','')[:10]} ({dec.get('type','Unknown')})"
+        css_class = type_classes.get(dec.get("type"), "")
+        st.markdown(
+            f"""
+            <style>
+            div[data-testid="stButton"] button[kind="secondary"] {{
+                all: unset;
+            }}
+            </style>
+            """, unsafe_allow_html=True
+        )
+        if st.button(btn_label, key=f"card_{dec['date']}_{dec['title']}", help=dec.get("type","")):
             st.session_state.timeline_state[dec['title']] = not st.session_state.timeline_state.get(dec['title'], False)
             st.rerun()
+
+        # Inject CSS class dynamically
+        st.markdown(
+            f"<script>document.querySelector('button[kind=\"secondary\"][aria-label=\"{btn_label}\"]').classList.add('{css_class}');</script>",
+            unsafe_allow_html=True
+        )
 
         if st.session_state.timeline_state.get(dec['title'], False):
             st.markdown(f"**Rationale:** {highlight_text(dec.get('rationale','—'), decision_search)}", unsafe_allow_html=True)
@@ -217,6 +247,7 @@ if filtered_chat:
         st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> — {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>", unsafe_allow_html=True)
 else:
     st.info("No messages found.")
+
 
 
 
