@@ -88,7 +88,39 @@ mark { background: #FFB347; color: black; padding: 0 2px; border-radius: 2px; }
 </style>
 """
 
+# --- Extra Fix: Button Styling (Light + Dark) ---
+button_css = """
+<style>
+/* Light Mode buttons */
+[data-testid="stButton"] > button {
+    background-color: #1a4f78 !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 6px 14px !important;
+    border: none !important;
+    font-weight: 600 !important;
+    margin: 4px 0;
+}
+[data-testid="stButton"] > button:hover {
+    background-color: #15506b !important;
+    color: #fff !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Dark Mode buttons */
+[data-testid="stAppViewContainer"][data-baseweb="baseweb"] .stButton>button {
+    background-color: #2A2A2A !important;
+    color: #E0E0E0 !important;
+}
+[data-testid="stAppViewContainer"][data-baseweb="baseweb"] .stButton>button:hover {
+    background-color: #333 !important;
+    color: #fff !important;
+}
+</style>
+"""
+
 st.markdown(light_css if theme_choice == "Light" else dark_css, unsafe_allow_html=True)
+st.markdown(button_css, unsafe_allow_html=True)
 
 # --- Header ---
 st.image("logo.png", use_container_width=False, width=120)
@@ -185,6 +217,7 @@ if filtered_chat:
         st.markdown(f"<div class='chat-bubble'><b>{m['speaker']}</b> — {m['timestamp'][:10]}<br>{highlight_text(m['text'], chat_search)}</div>", unsafe_allow_html=True)
 else:
     st.info("No messages found.")
+
 
 
 
